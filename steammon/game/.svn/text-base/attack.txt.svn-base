@@ -1,0 +1,6 @@
+(*attack_name element PP power accuracy crit_chance effect_num effect_chance*)
+Flamethrower Fire 15 75 50 3 0 5
+Surf Water 15 45 75 3 1 5
+Thunderbolt Electric 15 125 20 3 2 5
+HyperBeam Normal 15 100 40 3 3 5
+DrillPeck Flying 15 60 60 3 4 5

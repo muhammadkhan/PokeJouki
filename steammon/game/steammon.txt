@@ -1,0 +1,11 @@
+(*Species max_hp first_type second_type first_attack second_attack third_attack fourth_attack attack spl_attack defense spl_defence speed*)
+Charizard 200 Fire Flying Flamethrower Surf HyperBeam Thunderbolt 200 200 10
+Blastoise 200 Water Nothing Thunderbolt DrillPeck Surf HyperBeam 200 200 50
+Kyogre 200 Water Nothing Flamethrower Surf HyperBeam Thunderbolt 200 200 90
+Moltres 200 Fire Flying DrillPeck Surf HyperBeam Thunderbolt 200 200 40
+Zapdos 200 Electric Flying Flamethrower Surf HyperBeam Thunderbolt 200 200 30
+Jigglypuff 200 Normal Nothing Surf DrillPeck HyperBeam Thunderbolt 200 200 70
+Pikachu 200 Electric Nothing Surf DrillPeck HyperBeam Thunderbolt 200 200 90
+Lickitung 200 Normal Nothing DrillPeck Surf HyperBeam Thunderbolt 200 200 60
+Scyther 200 Bug Flying HyperBeam Surf DrillPeck Thunderbolt 200 200 70
+Electabuzz 200 Electric Nothing HyperBeam Surf Flamethrower Thunderbolt 200 200 30

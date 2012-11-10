@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/repos/cs3110/!svn/ver/602/2012fa/hw/ps6/release/game
+END
+game.ml
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/repos/cs3110/!svn/ver/612/2012fa/hw/ps6/release/game/game.ml
+END
+steammon.txt
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/repos/cs3110/!svn/ver/602/2012fa/hw/ps6/release/game/steammon.txt
+END
+attack.txt
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/repos/cs3110/!svn/ver/409/2012fa/hw/ps6/release/game/attack.txt
+END
+netgraphics.mli
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/repos/cs3110/!svn/ver/409/2012fa/hw/ps6/release/game/netgraphics.mli
+END
+game.mli
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/repos/cs3110/!svn/ver/612/2012fa/hw/ps6/release/game/game.mli
+END
+build_game.bat
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/repos/cs3110/!svn/ver/409/2012fa/hw/ps6/release/game/build_game.bat
+END
+server.ml
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/repos/cs3110/!svn/ver/571/2012fa/hw/ps6/release/game/server.ml
+END
+netgraphics.ml
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/repos/cs3110/!svn/ver/612/2012fa/hw/ps6/release/game/netgraphics.ml
+END
