@@ -1,0 +1,22 @@
+
+General Strategies for a good bot in Steammon 
+
+1. Team Selection 
+ a. The pure types (with no secondary type) have the advantage of being better defended. 
+    There cannot be super effeciveness due to their second type, because they have none. 
+   
+ b. We should ideally pick based on attacks, because the type of an attack does matter,
+    and we can get a lot of super-effective bonuses from it. 
+    
+ c. We should try to pick a dragon (pure) pokemon. This is due to its
+	lack of types where it is not effective. This means trying to get 
+
+ d. Getting a pure electric pokemon is also really beneficial,
+ 	because only ground is super effective against it. 
+ 	So Raikou is the top choice here
+ 
+ 
+ d. Personal choices:
+ 	i. Arcanine is a beast and is pure fire, that is if we don't get Entei. 
+ 	ii. Gengar is cash because of the Hypnosis - Dream Eater Combo      
+ 	iii. Tyranitar is a beast that is basically a tank of the team. 
