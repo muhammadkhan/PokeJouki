@@ -25,7 +25,7 @@ let find_atk_mult (atk : attack) (p : steammon) : double =
 (**given an attack,
  this figures out if it has a crit hit
 Then proceeds to give us the multiplier for it*)			
-let crit_hit_mult (a : attack) : double = 
+let crit_hit_mult (a : attack) : float = 
 	let crit_prob = float_of_int(a.crit_chance) in
 	let rand = Random.float 100. in 
 	if (rand < (crit_prob *. 100.)) 
