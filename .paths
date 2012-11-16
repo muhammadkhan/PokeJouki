@@ -1,2 +1,6 @@
 .
 /usr/local/lib/ocaml
+steammon
+steammon/game
+steammon/shared
+steammon/team

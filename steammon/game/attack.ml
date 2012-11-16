@@ -32,7 +32,23 @@ let crit_hit_mult (a : attack) : float =
 	  then cCRIT_MULTIPLIER
 	else 1.0	 	 
 
-
-
-
-
+(*should this return float and return the damage*)
+(*or should it return unit and simply update the values accordingly*)
+let normal_attack (at : steammon) (a : attack) (df: steammon) : float =
+	let pow = float_of_int a.power in
+	let (attackersattack, opponentsdef) =
+		match a.element with
+			| Fire
+			| Water
+			| Psychic
+			| Ghost -> (float_of_int at.spl_attack, float_of_int df.spl_defense)
+			| _ -> (float_of_int at.attack, float_of_int df.defense)
+	in
+	let crit_effect = crit_hit_mult a in
+	let stab_bonus =
+		if Some a.element = at.first_type || Some a.element = at.second_type then
+			cSTAB_BONUS
+		else 1.
+	in
+	let st_mult = find_atk_mult a df in
+	(pow*.attackersattack*.crit_effect*.stab_bonus*.st_mult)/.opponentsdef
