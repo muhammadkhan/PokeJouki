@@ -10,11 +10,6 @@ Should the state module be used here?
 
 (*At this point we are assuming that all of the fields are mutable*)
 
-(*using one of the X stat-boosting items*)
-(*NOT COMPLETED*)
-let use_X_item (i : item) : unit = 	()
-
-
 (*Using an ether on a pokemon*)		
 let use_Ether (i : item) (p: steammon) : unit = 
 	if (!(List.nth inventory 0) <> 0) then
@@ -37,8 +32,6 @@ let use_maxPotion (i : item) (p : steammon) : unit =
 		 else ()	
 		)
 	else ()
-
-			
 						
 (*Using a revive on a fainted pokemon*)												
 let use_Revive (i : item) (p : steammon) : unit = 
@@ -49,8 +42,20 @@ let use_Revive (i : item) (p : steammon) : unit =
 			)
 		 else ();	
 		)
-	else ()		
+	else ()
+	
+(*Using a full heal on a pokemon*)			
+let use_FullHeal (i : item) (p: steammon) : unit = 
+	if (!(List.nth inventory 3) <> 0) then
+		(p.status := []; 
+		 List.nth inventory 3 := !(List.nth inventory 3) - 1;
+		)
+	else ()					
 
+(*using one of the X stat-boosting items*)
+(*NOT COMPLETED*)
+(*This should just increment the specific modifier*)
+let use_X_item (i : item) : unit = 	()
 
 
 
