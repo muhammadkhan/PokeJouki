@@ -74,6 +74,19 @@ let change_mods_by (p : steammon ref) (delta : int) (i : int) : unit =
 		 mods = change_mods (!p).mods delta i;
 		}	 	
 
+(*Based on what i is, we decrement the inventory accordingly in order*)
+(*i can be from 0 to 7 (inclusive) *)
+let incr_inventory (iv : int ref list) (delta : int) (i : int) : unit = 
+	match i with
+	| 0 -> (List.nth iv 0) := !(List.nth iv 0) + delta;
+	| 1 -> (List.nth iv 1) := !(List.nth iv 1) + delta;	
+	| 2 -> (List.nth iv 2) := !(List.nth iv 2) + delta;
+	| 3 -> (List.nth iv 3) := !(List.nth iv 3) + delta;
+	| 4 -> (List.nth iv 4) := !(List.nth iv 4) + delta;
+	| 5 -> (List.nth iv 5) := !(List.nth iv 5) + delta;
+	| 6 -> (List.nth iv 6) := !(List.nth iv 6) + delta;
+	| 7 -> (List.nth iv 7) := !(List.nth iv 7) + delta;						 
+		 
 let rec all_are_dead (sl : steammon list) : bool =
 	match sl with
 		| [] -> true
