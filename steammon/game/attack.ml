@@ -1,7 +1,6 @@
 open Definitions
 open Util
 
-
 (**
 This is the module that handles when a pokemon is attacked by a certain type of attack. 
 This will evaulate an attack from a pokemon to another pokemon. 

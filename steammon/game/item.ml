@@ -9,10 +9,6 @@ And their subsequent effects on steammon
 Should the state module be used here? 
 *)
 
-
-
-
-
 (*Using an ether on a pokemon*)		
 let use_Ether (p: steammon ref) : unit = 
 	p :=  
@@ -82,7 +78,7 @@ let use_Revive (p : steammon ref) : unit =
 let use_FullHeal (p: steammon ref) : unit =
 	p := 
 		{species = (!p).species; 
-		 curr_hp = (!p).max_hp;
+		 curr_hp = (!p).curr_hp;
 		 max_hp = (!p).max_hp; 
 		 first_type = (!p).first_type;
 		 second_type = (!p).second_type; 
@@ -98,12 +94,16 @@ let use_FullHeal (p: steammon ref) : unit =
 		 status = [];
 		 mods = (!p).mods
 		}
-		
+
+
 (*using one of the X stat-boosting items*)
 (*NOT COMPLETED*)
 (*This should just increment the specific modifier*)
-let use_X_item (i : item) : unit = 	()
-
-						
-		
-				
+let use_X_item (i : item) (p : steammon ref) : unit = 
+  match i with
+	| XAttack -> change_mods_by p 1 1;
+	| XSpeed -> change_mods_by p 1 2;
+	| XDefense -> change_mods_by p 1 3;
+	| XAccuracy -> change_mods_by p 1 4;
+	| _ -> ()			  
+	
