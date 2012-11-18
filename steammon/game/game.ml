@@ -52,6 +52,21 @@ let game_from_data game_data : game =
 
 let handle_step g ra ba : game_output =
 	let (r_old, b_old) = g in
+	let update_team cmd old =
+		match cmd with
+			| Action(act) -> (
+				match act with
+						| SelectStarter(str) -> ()
+						| PickSteammon(str) -> () 
+						| PickInventory(str) -> ()
+						| SwitchSteammon(str) -> ()
+						| UseItem(itm, str) -> ()
+						| UseAttack(str) -> ()
+				)
+			| _ -> old
+	in
+	let r_new = update_team ra r_old and b_new = update_team ba b_old in
+	(*None, team_data * team_data , Some cmd1, Some cmd2*)
 	failwith "implement me!"
 
 let init_game () =
