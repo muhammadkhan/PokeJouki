@@ -232,3 +232,15 @@ let read_lines filename =
   with End_of_file ->
     close_in chan;
     List.rev !lines
+
+let steammon_of_string sl str =
+	try List.hd (List.filter (fun s -> s.species = str) sl)
+	with _ -> failwith "no such steammon"
+	
+let swap_steammon sl str =
+	let (p1, p2) = List.partition (fun s -> s.species = str) sl in
+	(List.hd p1)::p2
+	
+let deref_list = List.map (fun x -> !x)
+
+let reref_list = List.map (fun x -> ref x)

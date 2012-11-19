@@ -16,28 +16,42 @@ type game = team * team
 
 let game_datafication g : game_status_data =
 	let (redTeam, blueTeam) = g in
-	((List.map (fun s -> !s) redTeam.steammons, List.map (fun x -> !x) redTeam.items),
-	(List.map (fun s -> !s) blueTeam.steammons, List.map (fun x -> !x) blueTeam.items))
+	((deref_list redTeam.steammons, deref_list redTeam.items),
+	(deref_list blueTeam.steammons, deref_list blueTeam.items))
 
 let game_from_data game_data : game = 
 	let ((r_slist, r_inv), (b_slist, b_inv)) = game_data in
-	let red_team = {id = Red; steammons = List.map (fun s -> ref s) r_slist;
-	    items = List.map (fun x -> ref x) r_inv} in
-	let blue_team = {id = Blue; steammons = List.map (fun s -> ref s) b_slist;
-	    items = List.map (fun x -> ref x) b_inv} in
+	let red_team = {id = Red; steammons = reref_list r_slist;
+	    items = reref_list r_inv} in
+	let blue_team = {id = Blue; steammons = reref_list b_slist;
+	    items = reref_list b_inv} in
 	(red_team, blue_team)
 
 let handle_step g ra ba : game_output =
 	let (r_old, b_old) = g in
-	let update_team cmd old =
+	let update_team cmd (old : team) : team =
 		match cmd with
 			| Action(act) -> (
 				match act with
-						| SelectStarter(str) -> ()
-						| PickSteammon(str) -> () 
+						| PickSteammon(str) -> ()
 						| PickInventory(str) -> ()
-						| SwitchSteammon(str) -> ()
-						| UseItem(itm, str) -> ()
+						| SelectStarter(str)
+						| SwitchSteammon(str) ->
+							  let newlst = swap_steammon (deref_list old.steammons) str in
+								{id = old.id; steammons = reref_list newlst;
+								items = id.items}
+						| UseItem(itm, str) -> (
+							  let sref=ref(steammon_of_string(deref_list old.steammons)str)in
+								match itm with
+									| Ether -> Item.use_Ether sref; old
+									| MaxPotion -> Item.use_maxPotion sref; old
+									| Revive -> Item.use_Revive sref; old
+                  | FullHeal -> Item.use_FullHeal sref; old
+                  | XAttack
+                  | XDefense
+                  | XSpeed
+                  | XAccuracy -> Item.use_X_item itm sref; old
+							  )
 						| UseAttack(str) -> ()
 				)
 			| _ -> old
