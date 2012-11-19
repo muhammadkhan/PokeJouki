@@ -51,3 +51,25 @@ let normal_attack (at : steammon) (a : attack) (df: steammon) : float =
 	in
 	let st_mult = find_atk_mult a df in
 	(pow*.attackersattack*.crit_effect*.stab_bonus*.st_mult)/.opponentsdef
+	
+	
+(**This is the attack damage that happens 
+if a confused pokemon attacks itself	
+The attack is typeless, 
+and determined between the pokemons own attack and defense*)
+let confused_attack (p : steammon) : float = 
+	float_of_int ((cSELF_ATTACK_POWER * p.attack) / p.defense) 
+		
+			
+					
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
