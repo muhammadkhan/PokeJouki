@@ -10,7 +10,7 @@ This will evaulate an attack from a pokemon to another pokemon.
 
 (**given an attack on steammon p, 
 find the multiplier associated with the attack*)
-let find_atk_mult (atk : attack) (p : steammon) : double = 
+let find_atk_mult (atk : attack) (p : steammon) : float = 
 	let (p_typ1, p_typ2, atk_type) = 
 		(p.first_type, p.second_type, atk.element) in 
 		 match p_typ1, p_typ2 with

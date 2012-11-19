@@ -1,8 +1,6 @@
 open Definitions
 open State
 
-
-
 (**
 This is the module that controls all of the item usage 
 And their subsequent effects on steammon
@@ -51,7 +49,8 @@ let use_maxPotion (p : steammon ref) : unit =
 		 mods = (!p).mods
 		}
 
-(*Using a revive on a fainted pokemon*)												
+(*Using a revive on a fainted pokemon*)
+(*Eliminate all status effects*)												
 let use_Revive (p : steammon ref) : unit =
   if ((!p).curr_hp = 0) then
 		p := 
@@ -69,10 +68,10 @@ let use_Revive (p : steammon ref) : unit =
   		 defense = (!p).defense;
   		 spl_defense = (!p).spl_defense;
   		 speed = (!p).speed;
-  		 status = (!p).status;
+  		 status = [];
   		 mods = (!p).mods
 			}
-  else ()
+  else failwith "pokemon was not fainted"
 	
 (*Using a full heal on a pokemon*)			
 let use_FullHeal (p: steammon ref) : unit =
@@ -94,7 +93,6 @@ let use_FullHeal (p: steammon ref) : unit =
 		 status = [];
 		 mods = (!p).mods
 		}
-
 
 (*using one of the X stat-boosting items*)
 (*NOT COMPLETED*)

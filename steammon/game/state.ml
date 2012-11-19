@@ -1,13 +1,14 @@
 open Definitions
 open Util
 open Attack
+
 (*This State module will be used to keep track of the state of the game*)
 (*This includes using items, attacking, switching pokemon, keeping track*)
 (*of properties like HP, PP, inventory, etc*)
 
 let get_hp (p : steammon) = p.curr_hp
 
-let change_hp_by (p : steammmon) (delta : int) : steammon = {
+let change_hp_by (p : steammon) (delta : int) : steammon = {
 	species = p.species; curr_hp = p.curr_hp + delta; max_hp = p.max_hp;
 	first_type = p.first_type; second_type = p.second_type;
 	first_attack = p.first_attack; second_attack = p.second_attack;
