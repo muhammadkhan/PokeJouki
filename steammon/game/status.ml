@@ -102,41 +102,20 @@ let paralyzed_slowdown (p : steammon ref) : unit =
   	 status = (!p).status;
   	 mods = (!p).mods
 		}
-	
-			
+				
 (*This will determine whether the paralyzed pokemon can attack or not*)		
 let paralyze_attack : bool = 
 	let probability = Random.int 100 in 
 	probability < cPARALYSIS_CHANCE
-
-				
-(*THE ONLY REMAINING THING TO DO IS THE CONFUSED STATUS*)							
-														
-																					
-																												
-																																			
-																																										
-																																																	
-																																																															
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-			
-					
 	
-	
+(*This occurs before the chance to attack*)																												
+let snap_out_confusion : bool  =
+	let probability = Random.int 100 in 
+	probability < cSNAP_OUT_OF_CONFUSION				
+										
+(*This occurs if the pokemon does not snap out of confusion. *)																		
+let confused_self_attack : bool = 
+	let probability = Random.int 100 in 
+	probability < cSELF_ATTACK_CHANCE
 
-
+(*create a separate confused attack within the attack module *)																										
