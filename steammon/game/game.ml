@@ -14,6 +14,8 @@ type team = {
 (*first team = red, second team = blue*)
 type game = team * team
 
+let pool = ref []
+
 let game_datafication g : game_status_data =
 	let (redTeam, blueTeam) = g in
 	((deref_list redTeam.steammons, deref_list redTeam.items),
@@ -29,17 +31,23 @@ let game_from_data game_data : game =
 
 let handle_step g ra ba : game_output =
 	let (r_old, b_old) = g in
-	let update_team cmd (old : team) : team =
+	let update_team cmd (old : team) (old2 : team ref) : team =
 		match cmd with
 			| Action(act) -> (
 				match act with
-						| PickSteammon(str) -> ()
-						| PickInventory(str) -> ()
+						| PickSteammon(str) ->
+							  let newlst = swap_steammon (!pool) str in
+								{id = old.id; steammons = reref_list newlst;
+								items = old.items}
+						| PickInventory(inv) -> {
+							  id = old.id; steammons = old.steammons;
+								items = reref_list (List.map2 (+) inv (deref_list old.items))
+							}
 						| SelectStarter(str)
 						| SwitchSteammon(str) ->
 							  let newlst = swap_steammon (deref_list old.steammons) str in
 								{id = old.id; steammons = reref_list newlst;
-								items = id.items}
+								items = old.items}
 						| UseItem(itm, str) -> (
 							  let sref=ref(steammon_of_string(deref_list old.steammons)str)in
 								match itm with
@@ -52,13 +60,42 @@ let handle_step g ra ba : game_output =
                   | XSpeed
                   | XAccuracy -> Item.use_X_item itm sref; old
 							  )
-						| UseAttack(str) -> ()
+						| UseAttack(str) ->
+							  let battlemon_ref : streammon ref = List.hd old.steammons in
+								let battlemon : steammon = !battlemon_ref in
+								let atk1 = battlemon.first_attack in
+								let atk2 = battlemon.second_attack in
+								let atk3 = battlemon.third_attack in
+								let atk4 = battlemon.fourth_attack in
+								let atk : attack =
+									if atk1.name = str then atk1
+									else if atk2.name = str then atk2
+									else if atk3.name = str then atk3
+									else if atk4.name = str then atk3
+									else failwith "not a valid attack"
+								in
+								let dfdr = List.hd (!old2.steammons) in
+								let dmg = Attack.normal_attack battlemon atk !dfdr in
+								dfdr := State.change_hp_by !dfdr dmg;
+								old
 				)
 			| _ -> old
 	in
-	let r_new = update_team ra r_old and b_new = update_team ba b_old in
-	(*None, team_data * team_data , Some cmd1, Some cmd2*)
-	failwith "implement me!"
+	let r_new = update_team ra r_old
+	and b_new = update_team ba b_old in
+	let won =
+		if State.all_are_dead (deref_list (r_new.steammons))
+		   && State.all_are_dead (deref_list (b_new.steammons)) then
+			Some Tie
+		else if State.all_are_dead (deref_list (r_new.steammons)) then
+			Some (Winner Red)
+		else if State.all_are_dead (deref_list (b_new.steammons)) then
+			Some (Winner Blue)
+		else None
+	in
+	let r_data = (deref_list r_new.steammons, deref_list r_new.items) in
+	let b_data = (deref_list b_new.steammons, deref_list b_new.items) in
+	(won, (r_data, b_data) , None (*Some cmd1*), None(*Some cmd2*))
 
 let init_game () =
 	failwith "implement me!"
