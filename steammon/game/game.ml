@@ -98,4 +98,47 @@ let handle_step g ra ba : game_output =
 	(won, (r_data, b_data) , None (*Some cmd1*), None(*Some cmd2*))
 
 let init_game () =
-	failwith "implement me!"
+	let attackify (str : string) : attack =
+		let pieces = Str.split (Str.regexp " ") str in
+		if List.length pieces <> 8 then
+			failwith "invalid attack.txt file - at least one line is wrong"
+		else
+			let piece = List.nth pieces in
+			{name = piece 0; element = type_of_string (piece 1);
+			max_pp = int_of_string (piece 2); pp_remaining = int_of_string (piece 2);
+			power = int_of_string (piece 3); accuracy = int_of_string (piece 4);
+			crit_chance = int_of_string (piece 5);
+			effect = (effect_of_num (int_of_string (piece 6)), int_of_string(piece 7))
+			}
+	in
+	let alist  = List.map attackify (List.tl (read_lines "attack.txt")) in
+	let steammonify (str: string) : steammon =
+		let pieces = Str.split (Str.regexp " ") str in
+		if List.length pieces <> 13 then
+			failwith "invalid steammon.txt file - at least one line is wrong"
+		else
+			let piece = List.nth pieces in
+			{
+			  species = piece 0; curr_hp = int_of_string (piece 1);
+				max_hp = int_of_string (piece 1);
+				first_type = Some (type_of_string (piece 2));
+				second_type = if piece 3 = "Nothing" then None
+				              else Some (type_of_string (piece 3));
+				first_attack = List.hd (List.filter (fun a -> a.name = piece 4) alist);
+				second_attack=List.hd (List.filter (fun a -> a.name = piece 5) alist);
+				third_attack = List.hd (List.filter (fun a -> a.name = piece 6) alist);
+				fourth_attack=List.hd (List.filter (fun a -> a.name = piece 7) alist);
+				attack = int_of_string (piece 8); spl_attack = int_of_string(piece 9);
+				defense = int_of_string(piece 10);spl_defense =int_of_string(piece 11);
+				speed = int_of_string (piece 12); status = [];
+				mods = {
+					  attack_mod = 1; speed_mod = 1; defense_mod = 1; accuracy_mod = 1
+					}
+			}
+	in
+	let slist = List.map steammonify (read_lines "steammon.txt") in
+	(*first_pick*)
+	let c = if Random.int 2 = 0 then Red else Blue in
+	let red = {id = Red; steammons = []; items = []} in
+	let blue = {id = Blue; steammons = []; items = []} in
+	((red,blue), c, alist, slist)

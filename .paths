@@ -4,3 +4,5 @@ steammon
 steammon/game
 steammon/shared
 steammon/team
+steammon/data
+steammon/data/pokemon
