@@ -37,6 +37,8 @@ let handle_step g ra ba : game_output =
 				match act with
 						| PickSteammon(str) ->
 							  let newlst = swap_steammon (!pool) str in
+								let newmon = List.hd newlst in
+								Netgraphics.add_update (UpdateSteammon(newmon.species, newmon,curr_hp, newmon.max_hp, old.id));
 								{id = old.id; steammons = reref_list newlst;
 								items = old.items}
 						| PickInventory(inv) -> {
@@ -46,6 +48,7 @@ let handle_step g ra ba : game_output =
 						| SelectStarter(str)
 						| SwitchSteammon(str) ->
 							  let newlst = swap_steammon (deref_list old.steammons) str in
+								Netgraphics.add_update (SetChosenSteammon ((List.hd newlst).species));
 								{id = old.id; steammons = reref_list newlst;
 								items = old.items}
 						| UseItem(itm, str) -> (
@@ -77,6 +80,11 @@ let handle_step g ra ba : game_output =
 								let dfdr = List.hd (!old2.steammons) in
 								let dmg = Attack.normal_attack battlemon atk !dfdr in
 								dfdr := State.change_hp_by !dfdr dmg;
+								let msg =
+									if dmg = 0 then "Miss =("
+									else "Hit!"
+								in
+								Netgraphics.add_update (NegativeEffect(msg, !old2.id, dmg));
 								old
 				)
 			| _ -> old
@@ -139,6 +147,8 @@ let init_game () =
 	let slist = List.map steammonify (read_lines "steammon.txt") in
 	(*first_pick*)
 	let c = if Random.int 2 = 0 then Red else Blue in
+	Netgraphics.add_update (SetFirstAttacker c);
 	let red = {id = Red; steammons = []; items = []} in
 	let blue = {id = Blue; steammons = []; items = []} in
+	Netgraphics.send_update InitGraphics;
 	((red,blue), c, alist, slist)

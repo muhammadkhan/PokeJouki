@@ -9,8 +9,11 @@ open Attack
 let get_hp (p : steammon) = p.curr_hp
 
 let change_hp_by (p : steammon) (delta : int) : steammon = {
-	species = p.species; curr_hp = p.curr_hp + delta; max_hp = p.max_hp;
-	first_type = p.first_type; second_type = p.second_type;
+	species = p.species;
+	(*|||||||||||||||||||||||||||||||||||||*)
+	curr_hp = p.curr_hp + delta;
+	(*|||||||||||||||||||||||||||||||||||||*)
+	max_hp = p.max_hp; first_type = p.first_type; second_type = p.second_type;
 	first_attack = p.first_attack; second_attack = p.second_attack;
 	third_attack = p.third_attack; fourth_attack = p.fourth_attack;
 	attack = p.attack; spl_attack = p.spl_attack; defense = p.defense;
@@ -22,7 +25,10 @@ let get_pp (a : attack) = a.pp_remaining
 	
 let change_pp_by (a : attack) (delta : int) : attack = {
 	name = a.name; element = a.element; max_pp = a.max_pp;
-	pp_remaining = a.pp_remaining + delta; power = a.power; accuracy = a.accuracy;
+	(*|||||||||||||||||||||||||||||||||||||*)
+	pp_remaining = a.pp_remaining + delta;
+	(*|||||||||||||||||||||||||||||||||||||*)
+	power = a.power; accuracy = a.accuracy;
 	crit_chance = a.crit_chance; effect = a.effect
 }
 
@@ -75,11 +81,38 @@ let change_mods_by (p : steammon ref) (delta : int) (i : int) : unit =
 		 mods = change_mods (!p).mods delta i;
 		}	 	
 
+let change_status_list (p : steammon) (ss: status list) : steammon = {
+	species = p.species; curr_hp = p.curr_hp; max_hp = p.max_hp;
+	first_type = p.first_type; second_type = p.second_type;
+	first_attack = p.first_attack; second_attack = p.second_attack;
+	third_attack = p.third_attack; fourth_attack = p.fourth_attack;
+	attack = p.attack; spl_attack = p.spl_attack; defense = p.defense;
+	spl_defense = p.spl_defense; speed = p.speed;
+	(*|||||||||||||||||||||||||||||||||||||*)
+	status = ss;
+	(*|||||||||||||||||||||||||||||||||||||*)
+	mods = p.mods
+}
+
+let change_speed (p : steammon) (ns : int) : steammon = {
+	species = p.species; curr_hp = p.curr_hp; max_hp = p.max_hp;
+	first_type = p.first_type; second_type = p.second_type;
+	first_attack = p.first_attack; second_attack = p.second_attack;
+	third_attack = p.third_attack; fourth_attack = p.fourth_attack;
+	attack = p.attack; spl_attack = p.spl_attack; defense = p.defense;
+	spl_defense = p.spl_defense;
+	(*|||||||||||||||||||||||||||||||||||||*)
+	speed = ns;
+	(*|||||||||||||||||||||||||||||||||||||*)
+	status = p.status;
+	mods = p.mods
+}
+
 (*Based on what i is, we decrement the inventory accordingly in order*)
 (*i can be from 0 to 7 (inclusive) *)
-let incr_inventory (iv : int ref list) (delta : int) (i : int) : unit = 
+let change_inventory (iv : int ref list) (delta : int) (i : int) : unit = 
 	if i >= 0 && i <= 7 then
-		List.nth iv i := !(List.nth iv i) + delta
+		(List.nth iv i) := !(List.nth iv i) + delta
 	else
 		failwith "not a valid option"
 		 

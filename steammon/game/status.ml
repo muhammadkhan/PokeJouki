@@ -14,94 +14,26 @@ but not effects such as self-attacks
 let frozen_effect (p : steammon ref) : unit = 
 	let probability = Random.int 100 in
 	if probability < cDEFROST_CHANCE then
-		p := 
-			{species = (!p).species; 
-  		 curr_hp = (!p).curr_hp; (*We revive to half-health *)
-  		 max_hp = (!p).max_hp; 
-  		 first_type = (!p).first_type;
-  		 second_type = (!p).second_type; 
-  		 first_attack = (!p).first_attack;
-  		 second_attack = (!p).second_attack;
-  		 third_attack = (!p).third_attack;
-  		 fourth_attack =  (!p).fourth_attack;
-  		 attack = (!p).attack;
-  		 spl_attack = (!p).spl_attack;
-  		 defense = (!p).defense;
-  		 spl_defense = (!p).spl_defense;
-  		 speed = (!p).speed;
-  		 status = List.filter (fun x -> x <> Frozen) (!p).status;
-  		 mods = (!p).mods
-			}
+		p := change_status_list(!p)(List.filter(fun x->x<>Frozen)(!p).status)
 	else () 
 
 (*Poison damage that occurs at the end of every turn if the pokemon is poisoned*)
 let poison_damage (p : steammon ref) : unit = 
-	p := 
-		{species = (!p).species; 
-  	 curr_hp = 
-			 (!p).curr_hp - (int_of_float ((cPOISON_DAMAGE *. (float_of_int (!p).max_hp)))); (*We revive to half-health *)
-  	 max_hp = (!p).max_hp; 
-  	 first_type = (!p).first_type;
-  	 second_type = (!p).second_type; 
-  	 first_attack = (!p).first_attack;
-  	 second_attack = (!p).second_attack;
-  	 third_attack = (!p).third_attack;
-  	 fourth_attack =  (!p).fourth_attack;
-  	 attack = (!p).attack;
-  	 spl_attack = (!p).spl_attack;
-  	 defense = (!p).defense;
-  	 spl_defense = (!p).spl_defense;
-  	 speed = (!p).speed;
-  	 status = (!p).status;
-  	 mods = (!p).mods
-		}
+	let delta = int_of_float ((cPOISON_DAMAGE *. (float_of_int (!p).max_hp))) in
+	p := change_hp_by (!p) delta
 		
 (*If the pokemon is sleeping, then we will potentially wake it up*)	
 (*It should be able to attack after its waking up though  *)					
 let wakeup (p : steammon ref) : unit = 
 	let probability = Random.int 100 in 
 	 if (probability < cWAKE_UP_CHANCE) then
-		p := 
-			{species = (!p).species; 
-  		 curr_hp = (!p).curr_hp; (*We revive to half-health *)
-  		 max_hp = (!p).max_hp; 
-  		 first_type = (!p).first_type;
-  		 second_type = (!p).second_type; 
-  		 first_attack = (!p).first_attack;
-  		 second_attack = (!p).second_attack;
-  		 third_attack = (!p).third_attack;
-  		 fourth_attack =  (!p).fourth_attack;
-  		 attack = (!p).attack;
-  		 spl_attack = (!p).spl_attack;
-  		 defense = (!p).defense;
-  		 spl_defense = (!p).spl_defense;
-  		 speed = (!p).speed;
-  		 status = List.filter (fun x -> x <> Asleep) (!p).status;
-  		 mods = (!p).mods			
-			}
+		p := change_status_list(!p)(List.filter(fun x->x<>Asleep)(!p).status)
 	 else ()
 		
 (*This is the one-time slowdown that happens due to paralysis*)
 (*Note : make sure that paralysis is already in the status list*)						
 let paralyzed_slowdown (p : steammon ref) : unit = 
-	p :=
-		{species = (!p).species; 
-  	 curr_hp = ((!p).max_hp / 2); (*We revive to half-health *)
-  	 max_hp = (!p).max_hp; 
-  	 first_type = (!p).first_type;
-  	 second_type = (!p).second_type; 
-  	 first_attack = (!p).first_attack;
-  	 second_attack = (!p).second_attack;
-  	 third_attack = (!p).third_attack;
-  	 fourth_attack =  (!p).fourth_attack;
-  	 attack = (!p).attack;
-  	 spl_attack = (!p).spl_attack;
-  	 defense = (!p).defense;
-  	 spl_defense = (!p).spl_defense;
-  	 speed = (!p).speed / cPARALYSIS_SLOW;
-  	 status = (!p).status;
-  	 mods = (!p).mods
-		}
+	p := change_speed_by (!p) ((!p).speed / cPARALYSIS_SLOW)
 				
 (*This will determine whether the paralyzed pokemon can attack or not*)		
 let paralyze_attack : bool = 
@@ -118,4 +50,9 @@ let confused_self_attack : bool =
 	let probability = Random.int 100 in 
 	probability < cSELF_ATTACK_CHANCE
 
+let unparalyze (p : steammon ref) : unit =
+	if List.mem Paralyzed (!p.status) then
+		p := change_speed_by (!p) (!p.speed * cPARALYSIS_SLOW)
+	else
+		()
 (*create a separate confused attack within the attack module *)																										

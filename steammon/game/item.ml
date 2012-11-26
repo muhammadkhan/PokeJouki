@@ -30,72 +30,23 @@ let use_Ether (p: steammon ref) : unit =
 
 (*using a maxPotion on a pokemon*)	
 let use_maxPotion (p : steammon ref) : unit =
-  p := 
-		{species = (!p).species; 
-		 curr_hp = (!p).max_hp;
-		 max_hp = (!p).max_hp; 
-		 first_type = (!p).first_type;
-		 second_type = (!p).second_type; 
-		 first_attack = (!p).first_attack;
-		 second_attack = (!p).second_attack;
-		 third_attack = (!p).third_attack;
-		 fourth_attack =  (!p).fourth_attack;
-		 attack = (!p).attack;
-		 spl_attack = (!p).spl_attack;
-		 defense = (!p).defense;
-		 spl_defense = (!p).spl_defense;
-		 speed = (!p).speed;
-		 status = (!p).status;
-		 mods = (!p).mods
-		}
+  p := change_hp_by (!p) (!p.max_hp - !p.curr_hp)
 
 (*Using a revive on a fainted pokemon*)
 (*Eliminate all status effects*)												
 let use_Revive (p : steammon ref) : unit =
   if ((!p).curr_hp = 0) then
-		p := 
-			{species = (!p).species; 
-  		 curr_hp = ((!p).max_hp / 2); (*We revive to half-health *)
-  		 max_hp = (!p).max_hp; 
-  		 first_type = (!p).first_type;
-  		 second_type = (!p).second_type; 
-  		 first_attack = (!p).first_attack;
-  		 second_attack = (!p).second_attack;
-  		 third_attack = (!p).third_attack;
-  		 fourth_attack =  (!p).fourth_attack;
-  		 attack = (!p).attack;
-  		 spl_attack = (!p).spl_attack;
-  		 defense = (!p).defense;
-  		 spl_defense = (!p).spl_defense;
-  		 speed = (!p).speed;
-  		 status = [];
-  		 mods = (!p).mods
-			}
+		(Status.unparalyze p;
+		p := change_status_list (!p) [];
+		p := change_hp_by (!p) (!p.max_hp / 2))
   else failwith "pokemon was not fainted"
 	
 (*Using a full heal on a pokemon*)			
 let use_FullHeal (p: steammon ref) : unit =
-	p := 
-		{species = (!p).species; 
-		 curr_hp = (!p).curr_hp;
-		 max_hp = (!p).max_hp; 
-		 first_type = (!p).first_type;
-		 second_type = (!p).second_type; 
-		 first_attack = (!p).first_attack;
-		 second_attack = (!p).second_attack;
-		 third_attack = (!p).third_attack;
-		 fourth_attack =  (!p).fourth_attack;
-		 attack = (!p).attack;
-		 spl_attack = (!p).spl_attack;
-		 defense = (!p).defense;
-		 spl_defense = (!p).spl_defense;
-		 speed = (!p).speed;
-		 status = [];
-		 mods = (!p).mods
-		}
+	Status.unparalyze p;
+	p := change_status_list (!p) []
 
 (*using one of the X stat-boosting items*)
-(*NOT COMPLETED*)
 (*This should just increment the specific modifier*)
 let use_X_item (i : item) (p : steammon ref) : unit = 
   match i with
