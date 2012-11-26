@@ -19,7 +19,6 @@ let find_atk_mult (atk : attack) (p : steammon) : float =
 	    | Some x , None ->
 				weakness atk_type x
 			| None, _ -> failwith "Steammon must have initial type"	
-
 	
 (**given an attack,
  this figures out if it has a crit hit
@@ -33,6 +32,7 @@ let crit_hit_mult (a : attack) : float =
 
 (*should this return float and return the damage*)
 (*or should it return unit and simply update the values accordingly*)
+(*We can update this for steammon refs too*)
 let normal_attack (at : steammon) (a : attack) (df: steammon) : float =
 	let pow = float_of_int a.power in
 	let (attackersattack, opponentsdef) =
@@ -61,4 +61,10 @@ if a confused pokemon attacks itself
 The attack is typeless, 
 and determined between the pokemons own attack and defense*)
 let confused_attack (p : steammon) : float = 
+<<<<<<< HEAD
 	float_of_int ((cSELF_ATTACK_POWER * p.attack) / p.defense)
+=======
+	float_of_int ((cSELF_ATTACK_POWER * p.attack) / p.defense) 
+		
+			
+>>>>>>> db5acb57d42529a334bb2858f5fb1426d6be84f8
