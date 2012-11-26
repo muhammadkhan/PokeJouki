@@ -15,34 +15,59 @@ http://kotaku.com/5920285/five-tips-for-forming-the-perfect-pokemon-team-from-th
 
 let _ = Random.self_init ()
 
-(**This will determine how versatile the steammon's attacks are.*)
-let det_atk_value (s:steammon) = 
+let get_atk_lst (s : steammon) = 
+	let atk_lst = 
+		[s.first_attack; s.second_attack; s.third_attack; s.fourth_attack] in
+  atk_lst
+
+(*This will determine how versatile the steammon's attacks are.*)
+(*This looks mainly for type matching, not versatility*)
+(*Highest score is 2 ^ 3*)
+let det_atk_value (s:steammon) : int = 
 	(*If the attacks match with any of the pokemon's types it gets a bonus *)
-	let s_type = (s.first_type, s.second_type) in
-	let score = ref 0 in 
-	let attacks = 
-		(s.first_attack , s.second_attack, s.third_attack, s.fourth_attack) in 
-		
+	let (t1,t2) = (s.first_type, s.second_type) in
+	let score = ref 1 in 
+	let atks = get_atk_lst s in 
+	(*This are the attacks that cause damage*)	 
+	let damaging = 
+		List.filter (fun (x : attack) -> x.power <> 0) atk_lst in
+	List.iter (fun x -> if (Some (x.element) = t1 || Some (x.element) = t2) then
+		score := !score * 2 else score := !score + 1;) damaging;
+	!score	  			
 
-
-
+(*Values the effects that we want for our team.*)
+(*Note: we could include another parameter, where we can search for a particular effect*)
+let det_effect_value (s : steammon) : int = 
+	let score = ref 1 in 
+	let atks = get_atk_lst s in 
+	let effects =
+		let ef_help x = 
+			match x with
+			| (Nada, _) -> 0
+			| (_,_) -> 1 in
+		List.filter ef_help atks in
+	(*This may change based on our valuation of the effects, we are basing our strat on*)	
+	let f (e : attack) = 
+		match e.effect with
+			| (Poisons, _) -> score := !score + 3;
+			| (Confuses, _) -> score := !score + 2;
+			| (Sleeps, _) -> score := !score + 5;
+			| (Paralyzes, _) -> score := !score + 2;
+			| (Freezes, _) -> score := !score + 3;
+			| (_,_) -> ()	 	 		 	 	   
+	 in 
+   List.iter f effects;
+	 !score
 
 (**Determine how vulnerable this pokemon is to the other team.
 And how similar it is to pokemon on your own team
 and if it shares any weaknesses with any of your current pokemon*)
-let determine_pkm_pick (s :steammon) = ()	
+let det_pkm_pick (s :steammon) (a : team_data) (b : team_data) = ()	
+  
 
 
 
 
 
 
-
-
-
-
-
-let handle_request c r = 
-	match r with
-		| StarterRequest(gs) -> 
 				
