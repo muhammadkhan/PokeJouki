@@ -14,6 +14,10 @@ http://kotaku.com/5920285/five-tips-for-forming-the-perfect-pokemon-team-from-th
 *)
 
 let _ = Random.self_init ()
+let types = [Fire;Water;Ice;Grass;Poison;
+  Normal;Flying;Psychic;Ghost;
+  Dark;Steel;Rock;Ground;Electric;
+  Bug;Dragon;Fighting]
 
 let get_atk_lst (s : steammon) = 
 	let atk_lst = 
@@ -58,12 +62,40 @@ let det_effect_value (s : steammon) : int =
 	 in 
    List.iter f effects;
 	 !score
+	
+(**Muhammad's idea for this is to store a queue of the least common weaknesses
+Much like keeping a pool of shared weaknesses, and how many pokemon in the pool
+have this particular weakness. a pool of tuples of steamtype*int*)		
+	
+(*This determines if this pokemon shares weaknesses with the rest of your team*)		
+let det_sim_weakness (s:steammon) (a : team_data): bool =
+	(*The steammon-list that is our team*) 
+	let (my_team,_) = a in 
+	(*we will fold over the list and use types as the accumulator*) 
+	let f (a : steamtype list)  (b : steammon): steamtype list = 
+		match (b.first_type, b.second_type) with
+		| (Some x, Some y) ->
+			List.filter (fun z -> ((weakness z x) <= 1.0) && ((weakness z y) <= 1.0)) a  		
+	  | (Some x, _) -> 
+			List.filter (fun z -> (weakness z x) <= 1.0) a
+		| (_,_) -> failwith "this is not a possible type for a steammon"
+	in
+  let common_weak = List.fold_left f types my_team in
+	  if ((f common_weak s) <> []) then false
+	  else true  	
+	
 
 (**Determine how vulnerable this pokemon is to the other team.
 And how similar it is to pokemon on your own team
-and if it shares any weaknesses with any of your current pokemon*)
-let det_pkm_pick (s :steammon) (a : team_data) (b : team_data) = ()	
-  
+and if it shares any weaknesses with any of your current pokemon
+We will assume that you are team a, and team b is your opponent*)
+
+
+(*let det_pkm_pick (s :steammon) (a : team_data) (b : team_data) = 
+	(*The respective steammon in each team*)
+	let (my_team,_) = a in
+	let (op_team,_) = b in *)
+	 	
 
 
 
