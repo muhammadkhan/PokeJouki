@@ -50,7 +50,10 @@ let normal_attack (at : steammon) (a : attack) (df: steammon) : float =
 		else 1.
 	in
 	let st_mult = find_atk_mult a df in
-	(pow*.attackersattack*.crit_effect*.stab_bonus*.st_mult)/.opponentsdef
+	let happens = Random.int 100 in
+	if happens < atk.accuracy then
+	  (pow*.attackersattack*.crit_effect*.stab_bonus*.st_mult)/.opponentsdef
+	else 0.
 	
 	
 (**This is the attack damage that happens 
@@ -58,18 +61,4 @@ if a confused pokemon attacks itself
 The attack is typeless, 
 and determined between the pokemons own attack and defense*)
 let confused_attack (p : steammon) : float = 
-	float_of_int ((cSELF_ATTACK_POWER * p.attack) / p.defense) 
-		
-			
-					
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	float_of_int ((cSELF_ATTACK_POWER * p.attack) / p.defense)

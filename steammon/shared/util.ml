@@ -241,6 +241,6 @@ let swap_steammon sl str =
 	let (p1, p2) = List.partition (fun s -> s.species = str) sl in
 	(List.hd p1)::p2
 	
-let deref_list = List.map (fun x -> !x)
+let deref_list (lst : 'a ref list) : 'a list = List.map (fun x -> !x) lst
 
-let reref_list = List.map (fun x -> ref x)
+let reref_list (lst : 'a list) : 'a ref list = List.map (fun x -> ref x) lst
