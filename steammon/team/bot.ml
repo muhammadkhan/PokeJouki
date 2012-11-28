@@ -142,7 +142,15 @@ let compute_points (ps : steammon list) : (steammon * float) list =
 	in
 	List.map points_of ps
 
-
+(*picks the best steammon statistically*)
+let most_suitable_steammon (lst : (steammon*float) list) : steammon =
+	let choose ((acc : steammon list),(curMax : float)) (data : steammon * float) =
+		let (s, f) = data in
+		if f > curMax then ([s],f)
+		else if f = curMax then (s::acc, f)
+		else (acc, curMax)
+	in
+	List.hd (List.fold_left choose ([],min_float) lst)
 
 
 
