@@ -33,7 +33,7 @@ let wakeup (p : steammon ref) : unit =
 (*This is the one-time slowdown that happens due to paralysis*)
 (*Note : make sure that paralysis is already in the status list*)						
 let paralyzed_slowdown (p : steammon ref) : unit = 
-	p := change_speed_by (!p) ((!p).speed / cPARALYSIS_SLOW)
+	p := change_speed (!p) ((!p).speed / cPARALYSIS_SLOW)
 				
 (*This will determine whether the paralyzed pokemon can attack or not*)		
 let paralyze_attack : bool = 
@@ -52,7 +52,7 @@ let confused_self_attack : bool =
 
 let unparalyze (p : steammon ref) : unit =
 	if List.mem Paralyzed (!p.status) then
-		p := change_speed_by (!p) (!p.speed * cPARALYSIS_SLOW)
+		p := change_speed (!p) (!p.speed * cPARALYSIS_SLOW)
 	else
 		()
 (*create a separate confused attack within the attack module *)																										

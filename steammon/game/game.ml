@@ -38,7 +38,7 @@ let handle_step g ra ba : game_output =
 						| PickSteammon(str) ->
 							  let newlst = swap_steammon (!pool) str in
 								let newmon = List.hd newlst in
-								Netgraphics.add_update (UpdateSteammon(newmon.species, newmon,curr_hp, newmon.max_hp, old.id));
+								Netgraphics.add_update (UpdateSteammon(newmon.species, newmon.curr_hp, newmon.max_hp, old.id));
 								{id = old.id; steammons = reref_list newlst;
 								items = old.items}
 						| PickInventory(inv) -> {
@@ -64,7 +64,7 @@ let handle_step g ra ba : game_output =
                   | XAccuracy -> Item.use_X_item itm sref; old
 							  )
 						| UseAttack(str) ->
-							  let battlemon_ref : streammon ref = List.hd old.steammons in
+							  let battlemon_ref : steammon ref = List.hd old.steammons in
 								let battlemon : steammon = !battlemon_ref in
 								let atk1 = battlemon.first_attack in
 								let atk2 = battlemon.second_attack in
@@ -78,7 +78,7 @@ let handle_step g ra ba : game_output =
 									else failwith "not a valid attack"
 								in
 								let dfdr = List.hd (!old2.steammons) in
-								let dmg = Attack.normal_attack battlemon atk !dfdr in
+								let dmg = int_of_float (Attack.normal_attack battlemon (ref atk) !dfdr) in
 								dfdr := State.change_hp_by !dfdr dmg;
 								let msg =
 									if dmg = 0 then "Miss =("
@@ -89,8 +89,8 @@ let handle_step g ra ba : game_output =
 				)
 			| _ -> old
 	in
-	let r_new = update_team ra r_old
-	and b_new = update_team ba b_old in
+	let r_new = update_team ra r_old (ref b_old)
+	and b_new = update_team ba b_old (ref r_old) in
 	let won =
 		if State.all_are_dead (deref_list (r_new.steammons))
 		   && State.all_are_dead (deref_list (b_new.steammons)) then
