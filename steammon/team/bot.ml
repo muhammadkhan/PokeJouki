@@ -85,13 +85,45 @@ let pick_types (t_lst : steamtype list) (sp: steam_pool) =
   in
 	List.filter filter_help sp
 
+(*returns the effective attack we should use to consider points*)
+let atk_eff (p : steammon) : int =
+  (*returns true if at least two attacks are special*)
+	let has_special_majority (p : steammon) : bool =
+  	let special_list = [Electric; Fire; Water; Psychic; Ghost] in
+    let count (r : int) (elem : attack) =
+  		if List.mem elem.element special_list then r + 1
+  		else r
+  	in
+  	let ct = List.fold_left count 0 (get_atk_lst p) in
+    ct >= 2
+  in
+	if has_special_majority p then p.spl_attack
+	else p.attack
 
-
-
-
-
-
-
+let compute_points (ps : steammon list) : (steammon * float) list =
+	(*stab bonus : +6 per attack that actually gives a stab bonus*)
+	(* poisons : +3 * accuracy / 100*)
+	(*confuses : + 2 ...........*)
+	(*sleep : +5...............*)
+	(*paralyzes : +2...............*)
+	(*freezes : +3.................*)
+	(*add hp / 100*)
+	(*add (effective_attack + speed) / 50*)
+	(*add defense / 100*)
+	let points_of (p : steammon) =
+		let stab_bonus =
+			let f r elem =
+				if (elem.element = (valOf p.first_type)) ||
+				   (if p.second_type = None then false
+					  else (elem.element = (valOf p.second_type))) then
+					r + 6
+				else r
+			in
+			List.fold_left f 0 (get_atk_list p)
+		in
+		d (*need more stuff*)
+	in
+	List.map point_of ps
 
 
 
