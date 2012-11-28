@@ -103,7 +103,7 @@ let atk_eff (p : steammon) : int =
 (*returns the points, a measure of value, of the given steammon*)
 let compute_points (ps : steammon list) : (steammon * float) list =
 	(*stab bonus : +6 per attack that actually gives a stab bonus*)
-	(* poisons : +3 * accuracy / 100*)
+	(* poisons : +3 * accuracy * effect chance / 10000*)
 	(*confuses : + 2 ...........*)
 	(*sleep : +5...............*)
 	(*paralyzes : +2...............*)
@@ -120,12 +120,25 @@ let compute_points (ps : steammon list) : (steammon * float) list =
 					r + 6
 				else r
 			in
-			List.fold_left f 0 (get_atk_list p)
+			List.fold_left f 0 (get_atk_lst p)
+		in
+		let eff_pts =
+			let f r att =
+				let (eff, chance) = att.effect in
+				match eff with
+					| Poisions -> r +. (float_of_int(3*att.accuracy*chance)) /. 10000.
+					| Confuses -> r +. (float_of_int(2*att.accuracy*chance)) /. 10000.
+					| Sleeps -> r +. (float_of_int(5*att.accuracy*chance)) /. 10000.
+					| Paralyzes -> r +. (float_of_int(2*att.accuracy*chance)) /. 10000.
+					| Freezes -> r +. (float_of_int(3*att.accuracy*chance)) /. 10000.
+					| _ -> r
+			in
+			List.fold_left f 0. (get_atk_lst p)
 		in
 		let hp_pts = (float_of_int p.max_hp) /. 100. in
 		let as_pts = (float_of_int((atk_eff p) + p.speed)) /. 50. in
 		let d_pts = (float_of_int p.defense) /. 100. in
-		( p, (float_of_int stab_bonus) +. hp_pts +. as_pts + d_pts )
+		( p, (float_of_int stab_bonus)+. eff_pts +. hp_pts +. as_pts + d_pts )
 	in
 	List.map points_of ps
 
