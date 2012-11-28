@@ -100,6 +100,7 @@ let atk_eff (p : steammon) : int =
 	if has_special_majority p then p.spl_attack
 	else p.attack
 
+(*returns the points, a measure of value, of the given steammon*)
 let compute_points (ps : steammon list) : (steammon * float) list =
 	(*stab bonus : +6 per attack that actually gives a stab bonus*)
 	(* poisons : +3 * accuracy / 100*)
@@ -121,9 +122,12 @@ let compute_points (ps : steammon list) : (steammon * float) list =
 			in
 			List.fold_left f 0 (get_atk_list p)
 		in
-		d (*need more stuff*)
+		let hp_pts = (float_of_int p.max_hp) /. 100. in
+		let as_pts = (float_of_int((atk_eff p) + p.speed)) /. 50. in
+		let d_pts = (float_of_int p.defense) /. 100. in
+		( p, (float_of_int stab_bonus) +. hp_pts +. as_pts + d_pts )
 	in
-	List.map point_of ps
+	List.map points_of ps
 
 
 
