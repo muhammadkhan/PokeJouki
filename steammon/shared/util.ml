@@ -236,10 +236,12 @@ let read_lines filename =
 let steammon_of_string sl str =
 	try List.hd (List.filter (fun s -> s.species = str) sl)
 	with _ -> failwith "no such steammon"
+
 	
-let swap_steammon sl str =
+(*This function is problem*)	
+let swap_steammon (sl : steam_pool) (str : string) =
 	let (p1, p2) = List.partition (fun s -> s.species = str) sl in
-	(List.hd p1)::p2
+	List.rev_append (List.rev p1) p2
 
 (*cannot keep this in util, move elsewhere*)		
 let deref_list (lst : 'a ref list) : 'a list = List.map (fun x -> !x) lst

@@ -29,19 +29,26 @@ let game_from_data game_data : game =
 	    items = reref_list b_inv} in
 	(red_team, blue_team)
 
+
+(*All of these should be able to be done if the pool in initialized properly*)
 let handle_step g ra ba : game_output =
 	let (r_old, b_old) = g in
 	let update_team cmd (old : team) (old2 : team ref) : team =
 		match cmd with
 			| Action(act) -> (
+				(*have an if !pool = [] then ... else ()*)
 				match act with
 						| PickSteammon(str) ->
-							  let newlst = swap_steammon (!pool) str in
+							(*Of course this will not work! Pool is initially empty!!*)
+							print_endline ("entering pick");
+							let (newlst,new_pool) = List.partition (fun x -> x.species = str) (!pool)  in
+								pool := new_pool;
 								let newmon = 
 									match newlst with
 									|[] -> failwith "penis"
 									| h::_ -> h
-								in  
+								in
+								print_endline("exiting pick");  
 								Netgraphics.add_update (UpdateSteammon(newmon.species, newmon.curr_hp, newmon.max_hp, old.id));
 								{id = old.id; steammons = reref_list newlst;
 								items = old.items}
@@ -152,6 +159,7 @@ let init_game () =
 			}
 	in
 	let slist = List.map steammonify (read_lines "steammon.txt") in
+	pool := slist; 
 	(*first_pick*)
 	let c = if Random.int 2 = 0 then Red else Blue in
 	Netgraphics.add_update (SetFirstAttacker c);
