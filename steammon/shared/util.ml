@@ -240,7 +240,8 @@ let steammon_of_string sl str =
 let swap_steammon sl str =
 	let (p1, p2) = List.partition (fun s -> s.species = str) sl in
 	(List.hd p1)::p2
-	
+
+(*cannot keep this in util, move elsewhere*)		
 let deref_list (lst : 'a ref list) : 'a list = List.map (fun x -> !x) lst
 
 let reref_list (lst : 'a list) : 'a ref list = List.map (fun x -> ref x) lst

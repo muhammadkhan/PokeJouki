@@ -37,7 +37,11 @@ let handle_step g ra ba : game_output =
 				match act with
 						| PickSteammon(str) ->
 							  let newlst = swap_steammon (!pool) str in
-								let newmon = List.hd newlst in
+								let newmon = 
+									match newlst with
+									|[] -> failwith "penis"
+									| h::_ -> h
+								in  
 								Netgraphics.add_update (UpdateSteammon(newmon.species, newmon.curr_hp, newmon.max_hp, old.id));
 								{id = old.id; steammons = reref_list newlst;
 								items = old.items}
@@ -48,7 +52,10 @@ let handle_step g ra ba : game_output =
 						| SelectStarter(str)
 						| SwitchSteammon(str) ->
 							  let newlst = swap_steammon (deref_list old.steammons) str in
-								Netgraphics.add_update (SetChosenSteammon ((List.hd newlst).species));
+								let newlst' = if List.length newlst > 0 then newlst
+								              else failwith "vagina"
+								in
+								Netgraphics.add_update (SetChosenSteammon ((List.hd newlst').species));
 								{id = old.id; steammons = reref_list newlst;
 								items = old.items}
 						| UseItem(itm, str) -> (
@@ -103,7 +110,7 @@ let handle_step g ra ba : game_output =
 	in
 	let r_data = (deref_list r_new.steammons, deref_list r_new.items) in
 	let b_data = (deref_list b_new.steammons, deref_list b_new.items) in
-	(won, (r_data, b_data) , None (*Some cmd1*), None(*Some cmd2*))
+	(won, (r_data, b_data) , Some(Request(ActionRequest (game_datafication(r_new,b_new)))), Some(Request(ActionRequest (game_datafication(r_new,b_new)))))
 
 let init_game () =
 	let attackify (str : string) : attack =

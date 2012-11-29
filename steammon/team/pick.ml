@@ -172,27 +172,3 @@ let pick_stmn (gs: game_status_data) (c:color) (sp:steam_pool) : steammon =
     let effective_types = narrow_pick_type pick_num added_pkmn in 
 		let valid_pkmn = pick_types effective_types sp in 
 		most_suitable_steammon (compute_points valid_pkmn)    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
