@@ -47,8 +47,7 @@ let rec listen_loop () =
                   Mutex.lock msgLock;
                   lastReceivedMsg := Some r;
                   Mutex.unlock msgLock;
-      | None -> failwith "could not receive new message -- fatal");
-    listen_loop ()
+      | None -> listen_loop ());
   in
   match (Mutex.lock msgLock; (!skip, !toSend)) with
     | (false, None) -> Mutex.unlock msgLock; Thread.yield (); listen_loop ()

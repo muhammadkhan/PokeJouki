@@ -16,6 +16,9 @@ type game = team * team
 
 let pool = ref []
 
+let atks = ref []
+
+
 let game_datafication g : game_status_data =
 	let (redTeam, blueTeam) = g in
 	((deref_list redTeam.steammons, deref_list redTeam.items),
@@ -38,43 +41,42 @@ let handle_step g ra ba : game_output =
 			| Action(act) -> (
 				(*have an if !pool = [] then ... else ()*)
 				match act with
-						| PickSteammon(str) ->
-							(*Of course this will not work! Pool is initially empty!!*)
-							print_endline ("entering pick");
-							let (newlst,new_pool) = List.partition (fun x -> x.species = str) (!pool)  in
-								pool := new_pool;
-								let newmon = 
-									match newlst with
-									|[] -> failwith "penis"
-									| h::_ -> h
-								in
-								print_endline("exiting pick");  
-								Netgraphics.add_update (UpdateSteammon(newmon.species, newmon.curr_hp, newmon.max_hp, old.id));
-								{id = old.id; steammons = reref_list newlst;
-								items = old.items}
-						| PickInventory(inv) -> {
-							  id = old.id; steammons = old.steammons;
-								items = reref_list (List.map2 (+) inv (deref_list old.items))
-							}
+				| PickSteammon(str) -> 
+						let (newlst, newpool) = List.partition (fun p -> p.species = str) (!pool) in
+						pool := newpool;
+						let newmon = 
+							(match newlst with
+								| [] -> failwith "not valid steammon"
+								| h::_ -> h
+							)
+						in
+						Netgraphics.add_update(UpdateSteammon(newmon.species, newmon.curr_hp, newmon.max_hp,old.id));
+						{id=old.id; steammons = (ref newmon)::(old.steammons); items = old.items}
+						(*| PickInventory(inv) ->
+								{id = old.id; steammons = old.steammons;
+								items = reref_list (List.map2 (+) inv (deref_list old.items))}
 						| SelectStarter(str)
 						| SwitchSteammon(str) ->
+							  print_endline("enter switch");
 							  let newlst = swap_steammon (deref_list old.steammons) str in
 								let newlst' = if List.length newlst > 0 then newlst
 								              else failwith "vagina"
 								in
+								print_endline("exit switch");
 								Netgraphics.add_update (SetChosenSteammon ((List.hd newlst').species));
 								{id = old.id; steammons = reref_list newlst;
 								items = old.items}
 						| UseItem(itm, str) -> (
-							  let sref=ref(steammon_of_string(deref_list old.steammons)str)in
-								match itm with
+							  let sref=ref(steammon_of_string(deref_list old.steammons) str)in
+								print_endline("item match case");
+									match itm with
 									| Ether -> Item.use_Ether sref; old
 									| MaxPotion -> Item.use_maxPotion sref; old
 									| Revive -> Item.use_Revive sref; old
                   | FullHeal -> Item.use_FullHeal sref; old
-                  | XAttack
-                  | XDefense
-                  | XSpeed
+                  | XAttack -> Item.use_X_item itm sref; old
+                  | XDefense -> Item.use_X_item itm sref; old
+                  | XSpeed -> Item.use_X_item itm sref; old
                   | XAccuracy -> Item.use_X_item itm sref; old
 							  )
 						| UseAttack(str) ->
@@ -99,25 +101,34 @@ let handle_step g ra ba : game_output =
 									else "Hit!"
 								in
 								Netgraphics.add_update (NegativeEffect(msg, !old2.id, dmg));
-								old
+								old*)
+								| _ -> old
 				)
 			| _ -> old
 	in
 	let r_new = update_team ra r_old (ref b_old)
 	and b_new = update_team ba b_old (ref r_old) in
-	let won =
-		if State.all_are_dead (deref_list (r_new.steammons))
+	let won = 
+		(*if State.all_are_dead (deref_list (r_new.steammons))
 		   && State.all_are_dead (deref_list (b_new.steammons)) then
 			Some Tie
 		else if State.all_are_dead (deref_list (r_new.steammons)) then
 			Some (Winner Red)
 		else if State.all_are_dead (deref_list (b_new.steammons)) then
 			Some (Winner Blue)
-		else None
+		else*) None
 	in
 	let r_data = (deref_list r_new.steammons, deref_list r_new.items) in
 	let b_data = (deref_list b_new.steammons, deref_list b_new.items) in
-	(won, (r_data, b_data) , Some(Request(ActionRequest (game_datafication(r_new,b_new)))), Some(Request(ActionRequest (game_datafication(r_new,b_new)))))
+	let set_req t =
+		if List.length t.steammons < cNUM_PICKS then
+			PickRequest(t.id, (r_data, b_data), !atks, !pool)
+		else
+			ActionRequest(r_data,b_data)
+	in
+	let r_req = set_req r_new in
+	let b_req = set_req b_new in
+	(won, (r_data, b_data) , Some(Request(r_req)), Some(Request(b_req)))
 
 let init_game () =
 	let attackify (str : string) : attack =
@@ -134,6 +145,7 @@ let init_game () =
 			}
 	in
 	let alist  = List.map attackify (List.tl (read_lines "attack.txt")) in
+	atks := alist;
 	let steammonify (str: string) : steammon =
 		let pieces = Str.split (Str.regexp " ") str in
 		if List.length pieces <> 13 then

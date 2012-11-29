@@ -25,13 +25,13 @@ let handle_request c r =
                print_endline ("picking " ^ my_pick.species);
                PickSteammon(my_pick.species)
          | [] -> failwith "no steammon to pick!")
-    | ActionRequest (gr) ->
+    (*| ActionRequest (gr) ->
         let (a1, b1) = gr in
         let my_team = if c = Red then a1 else b1 in
         let (mons, [a;b;c;d;e;f;g;h]) = my_team in
         (match mons with
         | h::t ->
-					if h.curr_hp < h.max_hp && b > 0 then UseItem(MaxPotion,h.species) else
+					if h.curr_hp < h.max_hp && b > 0 then UseItem(MaxPotion, h.species) else
             if (h.first_attack).pp_remaining >0 then
               let _ = print_endline (h.species ^ "used " ^ ((h.first_attack).name)) in
                 UseAttack((h.first_attack).name)
@@ -45,7 +45,8 @@ let handle_request c r =
               let _ = print_endline (h.species ^ "used " ^ ((h.fourth_attack).name)) in
                 UseAttack((h.fourth_attack).name)
         | _ -> failwith "WHAT IN THE NAME OF ZARDOZ HAPPENED HERE")
-	 | PickInventoryRequest (gr) -> PickInventory(
+	   | PickInventoryRequest (gr) -> PickInventory(
 					[cNUM_ETHER;cNUM_MAX_POTION;cNUM_REVIVE;cNUM_FULL_HEAL;
-	 				 cNUM_XATTACK;cNUM_XDEFENSE;cNUM_XACCURACY;cNUM_XSPEED])
+	 				 cNUM_XATTACK;cNUM_XDEFENSE;cNUM_XACCURACY;cNUM_XSPEED])	*)
+		 | _ -> failwith "works so far"						
 let () = run_bot handle_request
