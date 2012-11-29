@@ -39,19 +39,20 @@ let find_missing (o: steam_pool) (n: steam_pool) : steammon list =
 
 	
 (*This is the same function but making use of the accessible game_data*)
-let find_newbies (o : game_status_data) (n : game_status_data) (c:color) : steam_pool = 
+(*o is the list of pokemon we know the opponent has*)
+let find_newbies (o : steam_pool) (n : game_status_data) (c:color) : steam_pool = 
 	let (op_team_o,op_team_n) =
 		(*We are picking the team here *) 
 		match c with
-		| Red -> ((fst (snd o)),(fst (snd n)))
-		| Blue -> ((fst (fst o)) , (fst (fst n)))   		
+		| Red -> (o, (fst (snd n)))
+		| Blue -> (o , (fst (fst n)))   		
 	in
   let find acc p =
 		if List.mem p op_team_n then acc
 		else p::acc				
 	in
-	List.fold_left find [] op_team_o							
-			
+	List.fold_left find [] op_team_o													
+												
 (****___________Everything after this is valid_______________ *****)								
 
 (*Still valid*)
@@ -137,7 +138,7 @@ let compute_points (ps : steammon list) : (steammon * float) list =
 			let f r att =
 				let (eff, chance) = att.effect in
 				match eff with
-					| Poisions -> r +. (float_of_int(3*att.accuracy*chance)) /. 10000.
+					| Poisons -> r +. (float_of_int(3*att.accuracy*chance)) /. 10000.
 					| Confuses -> r +. (float_of_int(2*att.accuracy*chance)) /. 10000.
 					| Sleeps -> r +. (float_of_int(5*att.accuracy*chance)) /. 10000.
 					| Paralyzes -> r +. (float_of_int(2*att.accuracy*chance)) /. 10000.
@@ -163,6 +164,35 @@ let most_suitable_steammon (lst : (steammon*float) list) : steammon =
 		else (acc, curMax)
 	in
 	List.hd (List.fold_left choose ([],min_float) lst)
+
+(*This is the final method, where we pick the pokemon we want to select next*)
+let pick_stmn (gs: game_status_data) (c:color) (sp:steam_pool) : steammon = 
+  let added_pkmn = find_newbies oppo_pkmn gs c in 
+	 (*All of the types that are super effective*)
+    let effective_types = narrow_pick_type pick_num added_pkmn in 
+		let valid_pkmn = pick_types effective_types sp in 
+		most_suitable_steammon (compute_points valid_pkmn)    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
