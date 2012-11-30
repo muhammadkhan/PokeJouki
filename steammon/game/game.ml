@@ -70,19 +70,22 @@ let handle_step g ra ba : game_output =
 							Netgraphics.add_update (SetChosenSteammon (mon.species));
 							{id = old.id; steammons = reref_list (mon::newtl);
 							items = old.items}
-						(*| UseItem(itm, str) -> (
+						| UseItem(itm, str) -> (
 							  let sref=ref(steammon_of_string(deref_list old.steammons) str)in
 								print_endline("item match case");
 									match itm with
-									| Ether -> Item.use_Ether sref; old
-									| MaxPotion -> Item.use_maxPotion sref; old
-									| Revive -> Item.use_Revive sref; old
-                  | FullHeal -> Item.use_FullHeal sref; old
-                  | XAttack -> Item.use_X_item itm sref; old
-                  | XDefense -> Item.use_X_item itm sref; old
-                  | XSpeed -> Item.use_X_item itm sref; old
-                  | XAccuracy -> Item.use_X_item itm sref; old
-							  )*)
+									| Ether -> Item.use_Ether sref; State.change_inventory old.items (-1) 0; old
+									| MaxPotion ->
+										print_endline ("used maxpotion");
+										Item.use_maxPotion sref; 
+										State.change_inventory old.items (-1) 1;old
+									| Revive -> Item.use_Revive sref; State.change_inventory old.items (-1) 2;old
+                  | FullHeal -> Item.use_FullHeal sref; State.change_inventory old.items (-1) 3;old
+                  | XAttack -> Item.use_X_item itm sref;State.change_inventory old.items (-1) 4; old
+                  | XDefense -> Item.use_X_item itm sref; State.change_inventory old.items (-1) 5;old
+                  | XSpeed -> Item.use_X_item itm sref; State.change_inventory old.items (-1) 6;old
+                  | XAccuracy -> Item.use_X_item itm sref; State.change_inventory old.items (-1) 7;old
+							  )
 						| UseAttack(str) ->
 							  let battlemon_ref : steammon ref = List.hd old.steammons in
 								let battlemon : steammon = !battlemon_ref in
@@ -106,8 +109,7 @@ let handle_step g ra ba : game_output =
 								in
 								Netgraphics.add_update(UpdateSteammon(!dfdr.species, !dfdr.curr_hp, !dfdr.max_hp, !old2.id));
 								Netgraphics.add_update (NegativeEffect(msg, !old2.id, dmg));
-								old
-						| _ -> old		
+								old	
 				)
 			| _ -> old
 	in
@@ -118,9 +120,9 @@ let handle_step g ra ba : game_output =
 		   && State.all_are_dead (deref_list (b_new.steammons)) then
 			Some Tie
 		else if List.length r_new.steammons > 0 && State.all_are_dead (deref_list (r_new.steammons)) then
-			Some (Winner Red)
-		else if List.length b_new.steammons > 0 && State.all_are_dead (deref_list (b_new.steammons)) then
 			Some (Winner Blue)
+		else if List.length b_new.steammons > 0 && State.all_are_dead (deref_list (b_new.steammons)) then
+			Some (Winner Red)
 		else None
 	in
 	let r_data = (deref_list r_new.steammons, deref_list r_new.items) in
@@ -196,9 +198,9 @@ let init_game () =
 	pool := slist; 
 	(*first_pick*)
 	let c = if Random.int 2 = 0 then Red else Blue in
-	Netgraphics.add_update (SetFirstAttacker c);
 	let initItems = [] in
 	let red = {id = Red; steammons = []; items = initItems} in
 	let blue = {id = Blue; steammons = []; items = initItems} in
 	Netgraphics.send_update InitGraphics;
+	Netgraphics.add_update (SetFirstAttacker c);
 	((red,blue), c, alist, slist)

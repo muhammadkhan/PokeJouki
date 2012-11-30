@@ -7,6 +7,10 @@ open Constants
  * You should change all of the inside and write many helper functions if you
  * want to have a good bot.
  *)
+
+
+(*Bot does not use Items!*)
+
 let _ = Random.self_init ()
 
 let handle_request c r =
@@ -31,8 +35,22 @@ let handle_request c r =
         let (mons, [a;b;c;d;e;f;g;h]) = my_team in
         (match mons with
         | h::t ->
-					(*if h.curr_hp < h.max_hp && b > 0 then UseItem(MaxPotion, h.species) else*)
-            if (h.first_attack).pp_remaining >0 then
+					if h.curr_hp < h.max_hp && b > 0 then UseItem(MaxPotion, h.species) else
+					let rand = Random.int 4 in 
+					let rec atk = fun () ->
+						let x = (match rand with
+							| 0 -> h.first_attack
+							| 1 -> h.second_attack
+							| 2 -> h.third_attack
+							| 3 -> h.fourth_attack
+							| _ -> failwith "never gonna happen"
+						) in
+						if x.pp_remaining > 0 then x else atk()
+					in
+					let y = atk () in
+					let _ = print_endline (h.species ^ " used " ^ y.name) in
+					UseAttack(y.name)
+            (*if (h.first_attack).pp_remaining >0 then
               let _ = print_endline (h.species ^ "used " ^ ((h.first_attack).name)) in
                 UseAttack((h.first_attack).name)
             else if ((h.second_attack).pp_remaining > 0) then
@@ -43,7 +61,7 @@ let handle_request c r =
                 UseAttack((h.third_attack).name)
             else
               let _ = print_endline (h.species ^ "used " ^ ((h.fourth_attack).name)) in
-                UseAttack((h.fourth_attack).name)
+                UseAttack((h.fourth_attack).name)*)
         | _ -> failwith "WHAT IN THE NAME OF ZARDOZ HAPPENED HERE")
 	   | PickInventoryRequest (gr) -> PickInventory(
 					[cNUM_ETHER;cNUM_MAX_POTION;cNUM_REVIVE;cNUM_FULL_HEAL;
