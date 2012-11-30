@@ -14,7 +14,7 @@ but not effects such as self-attacks
 let frozen_effect (p : steammon ref) : unit = 
 	let probability = Random.int 100 in
 	if probability < cDEFROST_CHANCE then
-		p := change_status_list(!p)(List.filter(fun x->x<>Frozen)(!p).status)
+		p := change_status_list(!p)(List.filter(fun x-> x<>Frozen)(!p).status)
 	else () 
 
 (*Poison damage that occurs at the end of every turn if the pokemon is poisoned*)

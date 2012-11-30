@@ -35,34 +35,41 @@ let handle_request c r =
         let (mons, [a;b;c;d;e;f;g;h]) = my_team in
         (match mons with
         | h::t ->
-					if h.curr_hp < h.max_hp && b > 0 then UseItem(MaxPotion, h.species) else
-					let rand = Random.int 4 in 
-					let rec atk = fun () ->
-						let x = (match rand with
-							| 0 -> h.first_attack
-							| 1 -> h.second_attack
-							| 2 -> h.third_attack
-							| 3 -> h.fourth_attack
-							| _ -> failwith "never gonna happen"
-						) in
-						if x.pp_remaining > 0 then x else atk()
-					in
-					let y = atk () in
-					let _ = print_endline (h.species ^ " used " ^ y.name) in
-					UseAttack(y.name)
-            (*if (h.first_attack).pp_remaining >0 then
-              let _ = print_endline (h.species ^ "used " ^ ((h.first_attack).name)) in
-                UseAttack((h.first_attack).name)
-            else if ((h.second_attack).pp_remaining > 0) then
-              let _ = print_endline (h.species ^ "used " ^ ((h.second_attack).name)) in
-                UseAttack((h.second_attack).name)
-            else if ((h.third_attack).pp_remaining >0) then
-              let _ = print_endline (h.species ^ "used " ^ ((h.third_attack).name)) in
-                UseAttack((h.third_attack).name)
-            else
-              let _ = print_endline (h.species ^ "used " ^ ((h.fourth_attack).name)) in
-                UseAttack((h.fourth_attack).name)*)
-        | _ -> failwith "WHAT IN THE NAME OF ZARDOZ HAPPENED HERE")
+					(if h.curr_hp < h.max_hp && b > 0 then UseItem(MaxPotion, h.species) 
+					else
+						let fainted =  (List.filter (fun x -> x.curr_hp = 0) mons) in			
+						match (List.length fainted) with
+							| 2 -> 
+							    let f_faint = 
+										List.hd fainted in UseItem (Revive, f_faint.species)
+					    | _ -> 		
+      					let rand = Random.int 4 in 
+      					let rec atk = fun () ->
+      						let x = (match rand with
+      							| 0 -> h.first_attack
+      							| 1 -> h.second_attack
+      							| 2 -> h.third_attack
+      							| 3 -> h.fourth_attack
+      							| _ -> failwith "never gonna happen"
+      						) in
+      						if x.pp_remaining > 0 then x else atk()
+      					in
+      					let y = atk () in
+      					let _ = print_endline (h.species ^ " used " ^ y.name) in
+      					UseAttack(y.name))
+                  (*if (h.first_attack).pp_remaining >0 then
+                    let _ = print_endline (h.species ^ "used " ^ ((h.first_attack).name)) in
+                      UseAttack((h.first_attack).name)
+                  else if ((h.second_attack).pp_remaining > 0) then
+                    let _ = print_endline (h.species ^ "used " ^ ((h.second_attack).name)) in
+                      UseAttack((h.second_attack).name)
+                  else if ((h.third_attack).pp_remaining >0) then
+                    let _ = print_endline (h.species ^ "used " ^ ((h.third_attack).name)) in
+                      UseAttack((h.third_attack).name)
+                  else
+                    let _ = print_endline (h.species ^ "used " ^ ((h.fourth_attack).name)) in
+                      UseAttack((h.fourth_attack).name)*)
+      | _ -> failwith "WHAT IN THE NAME OF ZARDOZ HAPPENED HERE")
 	   | PickInventoryRequest (gr) -> PickInventory(
 					[cNUM_ETHER;cNUM_MAX_POTION;cNUM_REVIVE;cNUM_FULL_HEAL;
 	 				 cNUM_XATTACK;cNUM_XDEFENSE;cNUM_XACCURACY;cNUM_XSPEED])						

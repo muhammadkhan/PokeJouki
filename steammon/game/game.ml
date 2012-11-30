@@ -32,12 +32,9 @@ let game_from_data game_data : game =
 	let blue_team = {id = Blue; steammons = reref_list b_slist;
 	    items = reref_list b_inv} in
 	(red_team, blue_team)
-
-
-(*All of these should be able to be done if the pool in initialized properly*)
-let handle_step g ra ba : game_output =
-	let (r_old, b_old) = g in
-	let update_team cmd (old : team) (old2 : team ref) : team =
+	
+(*This function calculates the next iteration for the Team*)	
+let update_team cmd (old : team) (old2 : team ref) : team =
 		match cmd with
 			| Action(act) -> (
 				(*have an if !pool = [] then ... else ()*)
@@ -76,10 +73,17 @@ let handle_step g ra ba : game_output =
 									match itm with
 									| Ether -> Item.use_Ether sref; State.change_inventory old.items (-1) 0; old
 									| MaxPotion ->
-										print_endline ("used maxpotion");
 										Item.use_maxPotion sref; 
-										State.change_inventory old.items (-1) 1;old
-									| Revive -> Item.use_Revive sref; State.change_inventory old.items (-1) 2;old
+										State.change_inventory old.items (-1) 1;
+										Netgraphics.add_update(UpdateSteammon(!sref.species, !sref.curr_hp, !sref.max_hp, old.id));
+										Netgraphics.add_update(PositiveEffect("used Max Potion", old.id, 0));
+										old
+									| Revive -> 
+										Item.use_Revive sref;
+									  State.change_inventory old.items (-1) 2;
+										Netgraphics.add_update(UpdateSteammon(!sref.species, !sref.curr_hp, !sref.max_hp, old.id));
+										Netgraphics.add_update(PositiveEffect("used Revive!", old.id, 0));
+										old
                   | FullHeal -> Item.use_FullHeal sref; State.change_inventory old.items (-1) 3;old
                   | XAttack -> Item.use_X_item itm sref;State.change_inventory old.items (-1) 4; old
                   | XDefense -> Item.use_X_item itm sref; State.change_inventory old.items (-1) 5;old
@@ -87,6 +91,7 @@ let handle_step g ra ba : game_output =
                   | XAccuracy -> Item.use_X_item itm sref; State.change_inventory old.items (-1) 7;old
 							  )
 						| UseAttack(str) ->
+							  (*This needs to take effects into account!!*)
 							  let battlemon_ref : steammon ref = List.hd old.steammons in
 								let battlemon : steammon = !battlemon_ref in
 								let atk1 = battlemon.first_attack in
@@ -111,8 +116,14 @@ let handle_step g ra ba : game_output =
 								Netgraphics.add_update (NegativeEffect(msg, !old2.id, dmg));
 								old	
 				)
-			| _ -> old
-	in
+			| _ -> old	
+	
+
+(*All of these should be able to be done if the pool in initialized properly*)
+let handle_step g ra ba : game_output =
+	let (r_old, b_old) = g in
+	
+	(*The commanding arguments could also be DoNothing*)
 	let r_new = update_team ra r_old (ref b_old)
 	and b_new = update_team ba b_old (ref r_old) in
 	let won = 
@@ -131,8 +142,13 @@ let handle_step g ra ba : game_output =
 		let team =
 			if t.id = Red then "Red" else "Blue"
 		in
-		if List.length t.steammons < cNUM_PICKS then
-			PickRequest(t.id, (r_data, b_data), !atks, !pool)
+		(*This sequence needs to be changed, to reflect the picking order*)		
+		if List.length t.steammons < cNUM_PICKS  then
+		  PickRequest(t.id, (r_data,b_data), !atks, !pool)
+			
+			
+			
+			
 		else if t.items = [] then
 			(print_endline (team ^ " pokemon done");
 			 PickInventoryRequest(r_data,b_data))
