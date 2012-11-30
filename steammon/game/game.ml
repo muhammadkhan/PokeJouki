@@ -18,6 +18,7 @@ let pool = ref []
 
 let atks = ref []
 
+let red_to_start = ref true and blue_to_start = ref true
 
 let game_datafication g : game_status_data =
 	let (redTeam, blueTeam) = g in
@@ -41,32 +42,35 @@ let handle_step g ra ba : game_output =
 			| Action(act) -> (
 				(*have an if !pool = [] then ... else ()*)
 				match act with
-				| PickSteammon(str) -> 
-						let (newlst, newpool) = List.partition (fun p -> p.species = str) (!pool) in
-						pool := newpool;
-						let newmon = 
-							(match newlst with
-								| [] -> failwith "not valid steammon"
-								| h::_ -> h
-							)
-						in
-						Netgraphics.add_update(UpdateSteammon(newmon.species, newmon.curr_hp, newmon.max_hp,old.id));
-						{id=old.id; steammons = (ref newmon)::(old.steammons); items = old.items}
-						(*| PickInventory(inv) ->
-								{id = old.id; steammons = old.steammons;
-								items = reref_list (List.map2 (+) inv (deref_list old.items))}
+						| PickSteammon(str) -> 
+							let (newlst, newpool) = List.partition (fun p -> p.species = str) (!pool) in
+							pool := newpool;
+							let newmon = 
+								(match newlst with
+									| [] -> failwith "not valid steammon"
+									| h::_ -> h
+								)
+							in
+							Netgraphics.add_update(UpdateSteammon(newmon.species, newmon.curr_hp, newmon.max_hp,old.id));
+							{id=old.id; steammons = (ref newmon)::(old.steammons); items = old.items}
+						| PickInventory(inv) ->
+							print_string "enter pick inventory";
+							{id = old.id; steammons = old.steammons;
+							items = reref_list inv}
 						| SelectStarter(str)
 						| SwitchSteammon(str) ->
-							  print_endline("enter switch");
-							  let newlst = swap_steammon (deref_list old.steammons) str in
-								let newlst' = if List.length newlst > 0 then newlst
-								              else failwith "vagina"
-								in
-								print_endline("exit switch");
-								Netgraphics.add_update (SetChosenSteammon ((List.hd newlst').species));
-								{id = old.id; steammons = reref_list newlst;
-								items = old.items}
-						| UseItem(itm, str) -> (
+							print_endline("enter switch");
+							let (newlst, newtl) = List.partition(fun x -> x.species = str) (deref_list old.steammons) in
+							let mon = 
+								match newlst with
+									| [] -> failwith "not a valid steammon"
+									| h::_ -> h
+							in
+							print_endline("exit switch");
+							Netgraphics.add_update (SetChosenSteammon (mon.species));
+							{id = old.id; steammons = reref_list (mon::newtl);
+							items = old.items}
+						(*| UseItem(itm, str) -> (
 							  let sref=ref(steammon_of_string(deref_list old.steammons) str)in
 								print_endline("item match case");
 									match itm with
@@ -78,7 +82,7 @@ let handle_step g ra ba : game_output =
                   | XDefense -> Item.use_X_item itm sref; old
                   | XSpeed -> Item.use_X_item itm sref; old
                   | XAccuracy -> Item.use_X_item itm sref; old
-							  )
+							  )*)
 						| UseAttack(str) ->
 							  let battlemon_ref : steammon ref = List.hd old.steammons in
 								let battlemon : steammon = !battlemon_ref in
@@ -95,40 +99,58 @@ let handle_step g ra ba : game_output =
 								in
 								let dfdr = List.hd (!old2.steammons) in
 								let dmg = int_of_float (Attack.normal_attack battlemon (ref atk) !dfdr) in
-								dfdr := State.change_hp_by !dfdr dmg;
+								dfdr := State.change_hp_by !dfdr (-dmg);
 								let msg =
 									if dmg = 0 then "Miss =("
 									else "Hit!"
 								in
+								Netgraphics.add_update(UpdateSteammon(!dfdr.species, !dfdr.curr_hp, !dfdr.max_hp, !old2.id));
 								Netgraphics.add_update (NegativeEffect(msg, !old2.id, dmg));
-								old*)
-								| _ -> old
+								old
+						| _ -> old		
 				)
 			| _ -> old
 	in
 	let r_new = update_team ra r_old (ref b_old)
 	and b_new = update_team ba b_old (ref r_old) in
 	let won = 
-		(*if State.all_are_dead (deref_list (r_new.steammons))
+		if State.all_are_dead (deref_list (r_new.steammons))
 		   && State.all_are_dead (deref_list (b_new.steammons)) then
 			Some Tie
-		else if State.all_are_dead (deref_list (r_new.steammons)) then
+		else if List.length r_new.steammons > 0 && State.all_are_dead (deref_list (r_new.steammons)) then
 			Some (Winner Red)
-		else if State.all_are_dead (deref_list (b_new.steammons)) then
+		else if List.length b_new.steammons > 0 && State.all_are_dead (deref_list (b_new.steammons)) then
 			Some (Winner Blue)
-		else*) None
+		else None
 	in
 	let r_data = (deref_list r_new.steammons, deref_list r_new.items) in
 	let b_data = (deref_list b_new.steammons, deref_list b_new.items) in
 	let set_req t =
+		let team =
+			if t.id = Red then "Red" else "Blue"
+		in
 		if List.length t.steammons < cNUM_PICKS then
 			PickRequest(t.id, (r_data, b_data), !atks, !pool)
-		else
-			ActionRequest(r_data,b_data)
+		else if t.items = [] then
+			(print_endline (team ^ " pokemon done");
+			 PickInventoryRequest(r_data,b_data))
+		else if !red_to_start || !blue_to_start || (not (!red_to_start && !blue_to_start) && !(List.hd(t.steammons)).curr_hp = 0) then
+			(print_endline (team ^ " has items");
+			 let () = if t.id = Red && !red_to_start then
+			   red_to_start := false
+			 else () in
+			 let () = if t.id = Blue && !blue_to_start then
+				 blue_to_start := false
+				 else () in
+			 StarterRequest(r_data,b_data))
+		else 
+			(print_endline (team ^ " starter selected");
+			ActionRequest(r_data,b_data))
 	in
 	let r_req = set_req r_new in
 	let b_req = set_req b_new in
 	(won, (r_data, b_data) , Some(Request(r_req)), Some(Request(b_req)))
+	
 
 let init_game () =
 	let attackify (str : string) : attack =
@@ -175,7 +197,8 @@ let init_game () =
 	(*first_pick*)
 	let c = if Random.int 2 = 0 then Red else Blue in
 	Netgraphics.add_update (SetFirstAttacker c);
-	let red = {id = Red; steammons = []; items = []} in
-	let blue = {id = Blue; steammons = []; items = []} in
+	let initItems = [] in
+	let red = {id = Red; steammons = []; items = initItems} in
+	let blue = {id = Blue; steammons = []; items = initItems} in
 	Netgraphics.send_update InitGraphics;
 	((red,blue), c, alist, slist)

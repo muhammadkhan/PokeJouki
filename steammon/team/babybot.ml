@@ -25,7 +25,7 @@ let handle_request c r =
                print_endline ("picking " ^ my_pick.species);
                PickSteammon(my_pick.species)
          | [] -> failwith "no steammon to pick!")
-    (*| ActionRequest (gr) ->
+    | ActionRequest (gr) ->
         let (a1, b1) = gr in
         let my_team = if c = Red then a1 else b1 in
         let (mons, [a;b;c;d;e;f;g;h]) = my_team in
@@ -47,6 +47,5 @@ let handle_request c r =
         | _ -> failwith "WHAT IN THE NAME OF ZARDOZ HAPPENED HERE")
 	   | PickInventoryRequest (gr) -> PickInventory(
 					[cNUM_ETHER;cNUM_MAX_POTION;cNUM_REVIVE;cNUM_FULL_HEAL;
-	 				 cNUM_XATTACK;cNUM_XDEFENSE;cNUM_XACCURACY;cNUM_XSPEED])	*)
-		 | _ -> failwith "works so far"						
+	 				 cNUM_XATTACK;cNUM_XDEFENSE;cNUM_XACCURACY;cNUM_XSPEED])						
 let () = run_bot handle_request

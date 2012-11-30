@@ -10,7 +10,7 @@ let get_hp (p : steammon) = p.curr_hp
 let change_hp_by (p : steammon) (delta : int) : steammon = {
 	species = p.species;
 	(*|||||||||||||||||||||||||||||||||||||*)
-	curr_hp = p.curr_hp + delta;
+	curr_hp = (let x = p.curr_hp + delta in if x < 0 then 0 else x);
 	(*|||||||||||||||||||||||||||||||||||||*)
 	max_hp = p.max_hp; first_type = p.first_type; second_type = p.second_type;
 	first_attack = p.first_attack; second_attack = p.second_attack;
