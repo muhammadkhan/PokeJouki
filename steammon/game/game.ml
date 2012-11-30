@@ -74,17 +74,50 @@ let handle_step g ra ba : game_output =
 							  let sref=ref(steammon_of_string(deref_list old.steammons) str)in
 								print_endline("item match case");
 									match itm with
-									| Ether -> Item.use_Ether sref; State.change_inventory old.items (-1) 0; old
+									| Ether ->
+										Item.use_Ether sref;
+										State.change_inventory old.items (-1) 0;
+										Netgraphics.add_update(PositiveEffect("Ether!", old.id, 0));
+										old
 									| MaxPotion ->
-										print_endline ("used maxpotion");
+										let prev_hp = !sref.curr_hp in
 										Item.use_maxPotion sref; 
-										State.change_inventory old.items (-1) 1;old
-									| Revive -> Item.use_Revive sref; State.change_inventory old.items (-1) 2;old
-                  | FullHeal -> Item.use_FullHeal sref; State.change_inventory old.items (-1) 3;old
-                  | XAttack -> Item.use_X_item itm sref;State.change_inventory old.items (-1) 4; old
-                  | XDefense -> Item.use_X_item itm sref; State.change_inventory old.items (-1) 5;old
-                  | XSpeed -> Item.use_X_item itm sref; State.change_inventory old.items (-1) 6;old
-                  | XAccuracy -> Item.use_X_item itm sref; State.change_inventory old.items (-1) 7;old
+										State.change_inventory old.items (-1) 1;
+										Netgraphics.add_update(UpdateSteammon(!sref.species, !sref.curr_hp, !sref.max_hp, old.id));
+										Netgraphics.add_update(PositiveEffect("Max Potion!", old.id, !sref.max_hp - prev_hp));
+										old
+									| Revive ->
+										Item.use_Revive sref;
+										State.change_inventory old.items (-1) 2;
+										Netgraphics.add_update(UpdateSteammon(!sref.species, !sref.curr_hp, !sref.max_hp, old.id));
+										Netgraphics.add_update(PositiveEffect("Revived!!", old.id, !sref.max_hp / 2));
+										old
+                  | FullHeal ->
+										Item.use_FullHeal sref;
+										State.change_inventory old.items (-1) 3;
+										Netgraphics.add_update(SetStatusEffects(!sref.species, []));
+										Netgraphics.add_update(PositiveEffect("Full Heal!", old.id, 0));
+										old
+                  | XAttack ->
+										Item.use_X_item itm sref;
+										State.change_inventory old.items (-1) 4;
+										Netgraphics.add_update(PositiveEffect("Attack +1!", old.id, 0));
+										old
+                  | XDefense ->
+										Item.use_X_item itm sref;
+										State.change_inventory old.items (-1) 5;
+										Netgraphics.add_update(PositiveEffect("Defense +1!", old.id, 0));
+										old
+                  | XSpeed ->
+										Item.use_X_item itm sref;
+										State.change_inventory old.items (-1) 6;
+										Netgraphics.add_update(PositiveEffect("Speed +1!", old.id, 0));
+										old
+                  | XAccuracy ->
+										Item.use_X_item itm sref;
+										State.change_inventory old.items (-1) 7;
+										Netgraphics.add_update(PositiveEffect("Accuracy +1!", old.id, 0));
+										old
 							  )
 						| UseAttack(str) ->
 							  let battlemon_ref : steammon ref = List.hd old.steammons in
