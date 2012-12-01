@@ -77,7 +77,7 @@ let narrow_pick_type (i : int ref) (sp :steam_pool) : steamtype list =
 		incr(i);
 		types)
   else 
-    (let op_picks = find_missing (!old_pool) sp in
+    (let op_picks = find_missing (!oppo_pkmn) sp in
 		 (*This is the function to figure out the opponents weaknesses*)
 		 let f acc (s:steammon) =
 			 (find_weakness s) @ acc
@@ -150,7 +150,7 @@ let compute_points (ps : steammon list) : (steammon * float) list =
 		let hp_pts = (float_of_int p.max_hp) /. 100. in
 		let as_pts = (float_of_int((atk_eff p) + p.speed)) /. 50. in
 		let d_pts = (float_of_int p.defense) /. 100. in
-		( p, (float_of_int stab_bonus)+. eff_pts +. hp_pts +. as_pts + d_pts )
+		( p, (float_of_int stab_bonus)+. eff_pts +. hp_pts +. as_pts +. d_pts )
 	in
 	List.map points_of ps
 
@@ -163,11 +163,11 @@ let most_suitable_steammon (lst : (steammon*float) list) : steammon =
 		else if f = curMax then (s::acc, f)
 		else (acc, curMax)
 	in
-	List.hd (List.fold_left choose ([],min_float) lst)
+	List.hd (fst (List.fold_left choose ([],min_float) lst))
 
 (*This is the final method, where we pick the pokemon we want to select next*)
 let pick_stmn (gs: game_status_data) (c:color) (sp:steam_pool) : steammon = 
-  let added_pkmn = find_newbies oppo_pkmn gs c in 
+  let added_pkmn = find_newbies !oppo_pkmn gs c in 
 	 (*All of the types that are super effective*)
     let effective_types = narrow_pick_type pick_num added_pkmn in 
 		let valid_pkmn = pick_types effective_types sp in 

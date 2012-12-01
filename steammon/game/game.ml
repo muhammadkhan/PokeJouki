@@ -20,6 +20,8 @@ let atks = ref []
 
 let current_out : steammon option ref = ref None
 
+let first_pick = ref true
+
 let red_to_start = ref true and blue_to_start = ref true
 
 let game_datafication g : game_status_data =
@@ -158,25 +160,26 @@ let update_team cmd (old : team) (old2 : team ref) : team =
 let handle_step g ra ba : game_output =
 	let (r_old, b_old) = g in
 	
-	(*The commanding arguments could also be DoNothing*)
 	let r_new = update_team ra r_old (ref b_old) in
 	let b_new = update_team ba b_old (ref r_new) in
 	let x  = deref_list (r_new.steammons) and y = deref_list (b_new.steammons) in 
 	let r_data = (deref_list r_new.steammons, deref_list r_new.items) in
 	let b_data = (deref_list b_new.steammons, deref_list b_new.items) in
-	let valOf o = match o with Some x -> x | None -> failwith "sdoifjdsiofjdsiof" in
+	(*let valOf o = match o with Some x -> x | None -> failwith "sdoifjdsiofjdsiof" in*)
 	let set_comm t other_t =
 		let team =
 			if t.id = Red then "Red" else "Blue"
 		in
-		(*This sequence needs to be changed, to reflect the picking order*)		
-		if List.length t.steammons < cNUM_PICKS  then
-		  Some(Request(PickRequest(t.id, (r_data,b_data), !atks, !pool)))
+		(*This sequence needs to be changed, to reflect the picking order*)								  
+		if (List.length t.steammons < cNUM_PICKS) then
+ 			 (if (List.length t.steammons) <= (List.length other_t.steammons) then 
+			      Some(Request(PickRequest(t.id, (r_data,b_data), !atks, !pool)))
+			 else
+			  None)
 		else if List.length t.steammons = cNUM_PICKS && List.length other_t.steammons < cNUM_PICKS then
 			None
 		else if t.items = [] then
-			(print_endline (team ^ " pokemon done");
-			 Some(Request(PickInventoryRequest(r_data,b_data))))
+			Some(Request(PickInventoryRequest(r_data,b_data)))
 		else if !red_to_start || !blue_to_start || (not (!red_to_start || !blue_to_start) && (!(List.hd t.steammons)).curr_hp = 0) then
 			(print_endline (team ^ " has items");
 			 let () = if t.id = Red && !red_to_start then

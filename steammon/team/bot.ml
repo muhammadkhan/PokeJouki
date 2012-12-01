@@ -19,23 +19,31 @@ from-the-greatest-player-in-the-world
 
 let _ = Random.self_init ()
 
+(*-----------Functions to initiate a switch steammon  -------------*)				
+
+(*(*We will only switch for advantage*)
+let switch_for_advantage (gs : game_status_data) (c: color) : steammon = 
+	let (r,b) = gs in 
+	(*We find the opposing team*)
+	let op_team = if c  = Red then b else r in 
+	  let (mons , _ ) = op_team in 
+		match mons with
+		| h::_ -> 
+			(*We find the weaknesses to the current pokemon*)
+			let weak_to = find_weakness h in
+			let y = List.filter (fun x -> (List.mem x.first_type weak_to)) (fst(r)) in
+			if y <> [] then List.hd y else failwith "no advantages left!"
+	  | _ -> failwith "no steammon left to choose!!"*)  
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+let handle_request c r = 
+	match r with 
+		| PickRequest(_,gs, _, sp) ->
+			(match sp with
+				| h::t -> 
+      			let my_pick =  Pick.pick_stmn gs c sp in 
+      			print_endline ("picking" ^ my_pick.species);
+      			PickSteammon(my_pick.species)
+				| [] -> failwith "no steammon to pick!")
+		| _ -> failwith "penis" 		
 
