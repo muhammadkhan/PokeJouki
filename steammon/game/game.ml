@@ -71,24 +71,49 @@ let update_team cmd (old : team) (old2 : team ref) : team =
 							  let sref=ref(steammon_of_string(deref_list old.steammons) str)in
 								print_endline("item match case");
 									match itm with
-									| Ether -> Item.use_Ether sref; State.change_inventory old.items (-1) 0; old
+									| Ether ->
+										Item.use_Ether sref;
+										State.change_inventory old.items (-1) 0;
+										Netgraphics.add_update(PositiveEffect("Ether!", old.id, 0));
+										old
 									| MaxPotion ->
 										Item.use_maxPotion sref; 
 										State.change_inventory old.items (-1) 1;
 										Netgraphics.add_update(UpdateSteammon(!sref.species, !sref.curr_hp, !sref.max_hp, old.id));
 										Netgraphics.add_update(PositiveEffect("used Max Potion", old.id, 0));
 										old
-									| Revive -> 
+									| Revive ->
 										Item.use_Revive sref;
-									  State.change_inventory old.items (-1) 2;
+										State.change_inventory old.items (-1) 2;
 										Netgraphics.add_update(UpdateSteammon(!sref.species, !sref.curr_hp, !sref.max_hp, old.id));
-										Netgraphics.add_update(PositiveEffect("used Revive!", old.id, 0));
+										Netgraphics.add_update(PositiveEffect("Revived!!", old.id, !sref.max_hp / 2));
 										old
-                  | FullHeal -> Item.use_FullHeal sref; State.change_inventory old.items (-1) 3;old
-                  | XAttack -> Item.use_X_item itm sref;State.change_inventory old.items (-1) 4; old
-                  | XDefense -> Item.use_X_item itm sref; State.change_inventory old.items (-1) 5;old
-                  | XSpeed -> Item.use_X_item itm sref; State.change_inventory old.items (-1) 6;old
-                  | XAccuracy -> Item.use_X_item itm sref; State.change_inventory old.items (-1) 7;old
+                  | FullHeal ->
+										Item.use_FullHeal sref;
+										State.change_inventory old.items (-1) 3;
+										Netgraphics.add_update(SetStatusEffects(!sref.species, []));
+										Netgraphics.add_update(PositiveEffect("Full Heal!", old.id, 0));
+										old
+                  | XAttack ->
+										Item.use_X_item itm sref;
+										State.change_inventory old.items (-1) 4;
+										Netgraphics.add_update(PositiveEffect("Attack +1!", old.id, 0));
+										old
+                  | XDefense ->
+										Item.use_X_item itm sref;
+										State.change_inventory old.items (-1) 5;
+										Netgraphics.add_update(PositiveEffect("Defense +1!", old.id, 0));
+										old
+                  | XSpeed ->
+										Item.use_X_item itm sref;
+										State.change_inventory old.items (-1) 6;
+										Netgraphics.add_update(PositiveEffect("Speed +1!", old.id, 0));
+										old
+                  | XAccuracy ->
+										Item.use_X_item itm sref;
+										State.change_inventory old.items (-1) 7;
+										Netgraphics.add_update(PositiveEffect("Accuracy +1!", old.id, 0));
+										old
 							  )
 						| UseAttack(str) ->
 							  (*This needs to take effects into account!!*)
@@ -124,18 +149,9 @@ let handle_step g ra ba : game_output =
 	let (r_old, b_old) = g in
 	
 	(*The commanding arguments could also be DoNothing*)
-	let r_new = update_team ra r_old (ref b_old)
-	and b_new = update_team ba b_old (ref r_old) in
-	let won = 
-		if State.all_are_dead (deref_list (r_new.steammons))
-		   && State.all_are_dead (deref_list (b_new.steammons)) then
-			Some Tie
-		else if List.length r_new.steammons > 0 && State.all_are_dead (deref_list (r_new.steammons)) then
-			Some (Winner Blue)
-		else if List.length b_new.steammons > 0 && State.all_are_dead (deref_list (b_new.steammons)) then
-			Some (Winner Red)
-		else None
-	in
+	let r_new = update_team ra r_old (ref b_old) in
+	let b_new = update_team ba b_old (ref r_new) in
+	let x  = deref_list (r_new.steammons) and y = deref_list (b_new.steammons) in 
 	let r_data = (deref_list r_new.steammons, deref_list r_new.items) in
 	let b_data = (deref_list b_new.steammons, deref_list b_new.items) in
 	let set_req t =
@@ -146,13 +162,10 @@ let handle_step g ra ba : game_output =
 		if List.length t.steammons < cNUM_PICKS  then
 		  PickRequest(t.id, (r_data,b_data), !atks, !pool)
 			
-			
-			
-			
 		else if t.items = [] then
 			(print_endline (team ^ " pokemon done");
 			 PickInventoryRequest(r_data,b_data))
-		else if !red_to_start || !blue_to_start || (not (!red_to_start && !blue_to_start) && !(List.hd(t.steammons)).curr_hp = 0) then
+		else if !red_to_start || !blue_to_start || (not (!red_to_start || !blue_to_start) && (!(List.hd t.steammons)).curr_hp = 0) then
 			(print_endline (team ^ " has items");
 			 let () = if t.id = Red && !red_to_start then
 			   red_to_start := false
@@ -167,6 +180,20 @@ let handle_step g ra ba : game_output =
 	in
 	let r_req = set_req r_new in
 	let b_req = set_req b_new in
+	let won =
+		match r_req, b_req with
+			| StarterRequest(_),_ -> if (List.filter (fun s -> s.curr_hp > 0) x) = [] then Some (Winner Blue) else None
+			| _,StarterRequest(_) -> if (List.filter (fun s -> s.curr_hp > 0) y) = [] then Some (Winner Red) else None
+			| _ ->
+    		if State.all_are_dead (x)
+    		   && State.all_are_dead (y) then
+    			Some Tie
+    		else if (not(State.all_are_dead y)) && State.all_are_dead (x) then
+    			Some (Winner Blue)
+    		else if (not (State.all_are_dead x)) && State.all_are_dead (y) then
+    			Some (Winner Red)
+    		else None
+		in
 	(won, (r_data, b_data) , Some(Request(r_req)), Some(Request(b_req)))
 	
 

@@ -30,7 +30,9 @@ let use_Ether (p: steammon ref) : unit =
 
 (*using a maxPotion on a pokemon*)	
 let use_maxPotion (p : steammon ref) : unit =
-  p := change_hp_by (!p) (!p.max_hp - !p.curr_hp)
+	if !p.curr_hp = 0 then () 
+	else
+    	p := change_hp_by (!p) (!p.max_hp - !p.curr_hp)
 
 (*Using a revive on a fainted pokemon*)
 (*Eliminate all status effects*)												

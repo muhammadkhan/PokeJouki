@@ -114,8 +114,17 @@ let change_inventory (iv : int ref list) (delta : int) (i : int) : unit =
 		(List.nth iv i) := !(List.nth iv i) + delta
 	else
 		failwith "not a valid option"
-		 
-let rec all_are_dead (sl : steammon list) : bool =
-	match sl with
-		| [] -> true
-		| h::t -> h.curr_hp = 0 && all_are_dead t
+		
+let all_are_dead (sl : steammon list) : bool = 
+	if sl = [] then false
+	else				
+		let rec helper (s : steammon list) : bool =
+	    match s with
+		  | [] -> true
+		  | h::t -> h.curr_hp = 0 && helper t
+	  in 
+		helper sl	
+
+
+
+

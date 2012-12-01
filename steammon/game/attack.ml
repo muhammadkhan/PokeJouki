@@ -56,7 +56,12 @@ let normal_attack (at : steammon) (a : attack ref) (df: steammon) : float =
 		(a := State.change_pp_by (!a) (-1);
 	  (pow*.attackersattack*.crit_effect*.stab_bonus*.st_mult)/.opponentsdef)
 	else 0.
+
 	
+		
+			
+				
+						
 	
 (**This is the attack damage that happens 
 if a confused pokemon attacks itself	
