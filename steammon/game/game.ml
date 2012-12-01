@@ -185,6 +185,7 @@ let handle_step g ra ba : game_output =
 			 let () = if t.id = Blue && !blue_to_start then
 				 blue_to_start := false
 				 else () in
+			 Netgraphics.add_update(Message("The current dead pokemon on " ^ team ^ " team is " ^ (!(List.hd t.steammons)).species));
 			 Some(Request(StarterRequest(r_data,b_data))))
 		else 
 			(print_endline (team ^ " starter selected");

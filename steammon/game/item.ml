@@ -39,7 +39,7 @@ let use_maxPotion (p : steammon ref) : unit =
 (*Using a revive on a fainted pokemon*)
 (*Eliminate all status effects*)												
 let use_Revive (p : steammon ref) : unit =
-  if ((!p).curr_hp = 0) then
+  if !p.curr_hp = 0 then
 		(Status.unparalyze p;
 		p := change_status_list (!p) [];
 		p := change_hp_by (!p) (!p.max_hp / 2);

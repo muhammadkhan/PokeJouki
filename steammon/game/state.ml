@@ -32,32 +32,32 @@ let change_pp_by (a : attack) (delta : int) : attack = {
 }
 
 (*i = 1 changes attack, 2 speed, 3 defense, 4 accuracy*)
-let change_mods_by (p : steammon ref) (delta : int) (i : int) : unit =
-  let change_mods (m : modifier) (delta : int) (i : int): modifier = 
+let change_mods_by (p : steammon ref) (n : int) (i : int) : unit =
+  let change_mods (m : modifier) (n : int) (i : int): modifier = 
 	  match i with
 	  | 1 -> 
-  		{attack_mod = m.attack_mod + delta;
+  		{attack_mod = n;
   		 speed_mod = m.speed_mod;
   		 defense_mod = m.defense_mod;
   		 accuracy_mod = m.accuracy_mod;	
   		} 
 	  | 2 ->
   		{attack_mod = m.attack_mod;
-  		 speed_mod = m.speed_mod + delta;
+  		 speed_mod = n;
   		 defense_mod = m.defense_mod;
   		 accuracy_mod = m.accuracy_mod;	
   		} 
 	  | 3 ->
   		{attack_mod = m.attack_mod;
   		 speed_mod = m.speed_mod;
-  		 defense_mod = m.defense_mod + delta;
+  		 defense_mod = n;
   		 accuracy_mod = m.accuracy_mod;	
   		} 
 	  | 4 ->
   		{attack_mod = m.attack_mod;
   		 speed_mod = m.speed_mod;
   		 defense_mod = m.defense_mod;
-  		 accuracy_mod = m.accuracy_mod + delta;	
+  		 accuracy_mod = n;	
   		} 
 	  | _ -> m 
 	in
@@ -77,7 +77,7 @@ let change_mods_by (p : steammon ref) (delta : int) (i : int) : unit =
 		 spl_defense = (!p).spl_defense;
 		 speed = (!p).speed;
 		 status = [];
-		 mods = change_mods (!p).mods delta i;
+		 mods = change_mods (!p).mods n i;
 		}	 	
 
 let change_status_list (p : steammon) (ss: status list) : steammon = {

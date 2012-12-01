@@ -33,6 +33,11 @@ let handle_request c r =
         let (a1, b1) = gr in
         let my_team = if c = Red then a1 else b1 in
         let (mons, [a;b;c;d;e;f;g;h]) = my_team in
+				(*let switch = Random.int 100 in
+				if switch < 15 then
+					let h = (List.hd (List.rev mons)).species in
+					SwitchSteammon(h)
+				else*)
         (match mons with
         | h::t ->
 					(if h.curr_hp < h.max_hp && b > 0 then UseItem(MaxPotion, h.species) 
