@@ -37,26 +37,42 @@ let handle_request c r =
         | h::t ->
 					(if h.curr_hp < h.max_hp && b > 0 then UseItem(MaxPotion, h.species) 
 					else
-						let fainted =  (List.filter (fun x -> x.curr_hp = 0) mons) in			
-						match (List.length fainted) with
-							| 2 -> 
-							    let f_faint = 
-										List.hd fainted in UseItem (Revive, f_faint.species)
-					    | _ -> 		
-      					let rand = Random.int 4 in 
-      					let rec atk = fun () ->
-      						let x = (match rand with
-      							| 0 -> h.first_attack
-      							| 1 -> h.second_attack
-      							| 2 -> h.third_attack
-      							| 3 -> h.fourth_attack
-      							| _ -> failwith "never gonna happen"
-      						) in
-      						if x.pp_remaining > 0 then x else atk()
-      					in
-      					let y = atk () in
-      					let _ = print_endline (h.species ^ " used " ^ y.name) in
-      					UseAttack(y.name))
+						if (c > 0) then 
+  					 (let fainted =  (List.filter (fun x -> x.curr_hp = 0) mons) in			
+  						match (List.length fainted) with
+  							| 2 -> 
+  							    let f_faint = 
+  										List.hd fainted in UseItem (Revive, f_faint.species)
+  					    | _  -> 		
+        					let rand = Random.int 4 in 
+        					let rec atk = fun () ->
+        						let x = (match rand with
+        							| 0 -> h.first_attack
+        							| 1 -> h.second_attack
+        							| 2 -> h.third_attack
+        							| 3 -> h.fourth_attack
+        							| _ -> failwith "never gonna happen"
+        						) in
+        						if x.pp_remaining > 0 then x else atk()
+        					in
+        					let y = atk () in
+        					let _ = print_endline (h.species ^ " used " ^ y.name) in
+        					UseAttack(y.name))
+						else
+							 let rand = Random.int 4 in 
+        			 let rec atk = fun () ->
+        						let x = (match rand with
+        							| 0 -> h.first_attack
+        							| 1 -> h.second_attack
+        							| 2 -> h.third_attack
+        							| 3 -> h.fourth_attack
+        							| _ -> failwith "never gonna happen"
+        						) in
+        						if x.pp_remaining > 0 then x else atk()
+        					in
+        					let y = atk () in
+        					let _ = print_endline (h.species ^ " used " ^ y.name) in
+        					UseAttack(y.name))	
                   (*if (h.first_attack).pp_remaining >0 then
                     let _ = print_endline (h.species ^ "used " ^ ((h.first_attack).name)) in
                       UseAttack((h.first_attack).name)

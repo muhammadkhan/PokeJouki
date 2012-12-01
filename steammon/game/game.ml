@@ -18,6 +18,8 @@ let pool = ref []
 
 let atks = ref []
 
+let current_out : steammon option ref = ref None
+
 let red_to_start = ref true and blue_to_start = ref true
 
 let game_datafication g : game_status_data =
@@ -54,8 +56,8 @@ let update_team cmd (old : team) (old2 : team ref) : team =
 							print_string "enter pick inventory";
 							{id = old.id; steammons = old.steammons;
 							items = reref_list inv}
-						| SelectStarter(str)
-						| SwitchSteammon(str) ->
+						| SwitchSteammon(str)
+						| SelectStarter(str) ->
 							print_endline("enter switch");
 							let (newlst, newtl) = List.partition(fun x -> x.species = str) (deref_list old.steammons) in
 							let mon = 
@@ -65,11 +67,11 @@ let update_team cmd (old : team) (old2 : team ref) : team =
 							in
 							print_endline("exit switch");
 							Netgraphics.add_update (SetChosenSteammon (mon.species));
+							current_out := Some mon;
 							{id = old.id; steammons = reref_list (mon::newtl);
 							items = old.items}
 						| UseItem(itm, str) -> (
 							  let sref=ref(steammon_of_string(deref_list old.steammons) str)in
-								print_endline("item match case");
 									match itm with
 									| Ether ->
 										Item.use_Ether sref;
@@ -131,14 +133,22 @@ let update_team cmd (old : team) (old2 : team ref) : team =
 									else failwith "not a valid attack"
 								in
 								let dfdr = List.hd (!old2.steammons) in
-								let dmg = int_of_float (Attack.normal_attack battlemon (ref atk) !dfdr) in
+								let dmg = int_of_float (Attack.final_attack (ref atk) battlemon_ref dfdr) in
+								Attack.apply_effect (ref atk) dfdr;
 								dfdr := State.change_hp_by !dfdr (-dmg);
 								let msg =
 									if dmg = 0 then "Miss =("
 									else "Hit!"
 								in
+								let () = if List.mem Poisoned !battlemon_ref.status then
+									let dmg = Status.poison_damage battlemon_ref in
+									Netgraphics.add_update(UpdateSteammon(!battlemon_ref.species, !battlemon_ref.curr_hp, !battlemon_ref.max_hp, old.id));
+									Netgraphics.add_update(NegativeEffect("Poison Damage X_X", old.id, dmg));
+									Netgraphics.add_update(Message(battlemon.species ^ " inflicted damage on itself due to poisoning"))
+								else () in
 								Netgraphics.add_update(UpdateSteammon(!dfdr.species, !dfdr.curr_hp, !dfdr.max_hp, !old2.id));
 								Netgraphics.add_update (NegativeEffect(msg, !old2.id, dmg));
+								Netgraphics.add_update(Message(battlemon.species ^ " used " ^ atk.name ^ " on " ^ !dfdr.species ^ "!"));
 								old	
 				)
 			| _ -> old	
@@ -154,17 +164,19 @@ let handle_step g ra ba : game_output =
 	let x  = deref_list (r_new.steammons) and y = deref_list (b_new.steammons) in 
 	let r_data = (deref_list r_new.steammons, deref_list r_new.items) in
 	let b_data = (deref_list b_new.steammons, deref_list b_new.items) in
-	let set_req t =
+	let valOf o = match o with Some x -> x | None -> failwith "sdoifjdsiofjdsiof" in
+	let set_comm t other_t =
 		let team =
 			if t.id = Red then "Red" else "Blue"
 		in
 		(*This sequence needs to be changed, to reflect the picking order*)		
 		if List.length t.steammons < cNUM_PICKS  then
-		  PickRequest(t.id, (r_data,b_data), !atks, !pool)
-			
+		  Some(Request(PickRequest(t.id, (r_data,b_data), !atks, !pool)))
+		else if List.length t.steammons = cNUM_PICKS && List.length other_t.steammons < cNUM_PICKS then
+			None
 		else if t.items = [] then
 			(print_endline (team ^ " pokemon done");
-			 PickInventoryRequest(r_data,b_data))
+			 Some(Request(PickInventoryRequest(r_data,b_data))))
 		else if !red_to_start || !blue_to_start || (not (!red_to_start || !blue_to_start) && (!(List.hd t.steammons)).curr_hp = 0) then
 			(print_endline (team ^ " has items");
 			 let () = if t.id = Red && !red_to_start then
@@ -173,15 +185,17 @@ let handle_step g ra ba : game_output =
 			 let () = if t.id = Blue && !blue_to_start then
 				 blue_to_start := false
 				 else () in
-			 StarterRequest(r_data,b_data))
+			 Some(Request(StarterRequest(r_data,b_data))))
 		else 
 			(print_endline (team ^ " starter selected");
-			ActionRequest(r_data,b_data))
+			Some(Request(ActionRequest(r_data,b_data))))
 	in
-	let r_req = set_req r_new in
-	let b_req = set_req b_new in
+	let r_comm = set_comm r_new b_new in
+	let b_comm = set_comm b_new r_new in
+	let r_remaining = List.filter (fun s -> s.curr_hp > 0) x in
+	let b_remaining = List.filter (fun s -> s.curr_hp > 0) y in
 	let won =
-		match r_req, b_req with
+		(*match r_req, b_req with
 			| StarterRequest(_),_ -> if (List.filter (fun s -> s.curr_hp > 0) x) = [] then Some (Winner Blue) else None
 			| _,StarterRequest(_) -> if (List.filter (fun s -> s.curr_hp > 0) y) = [] then Some (Winner Red) else None
 			| _ ->
@@ -192,9 +206,16 @@ let handle_step g ra ba : game_output =
     			Some (Winner Blue)
     		else if (not (State.all_are_dead x)) && State.all_are_dead (y) then
     			Some (Winner Red)
-    		else None
+    		else None*)
+				if r_remaining = [] && x <> [] && b_remaining = [] && y <> [] then Some Tie
+				else if r_remaining = [] && x <> [] && b_remaining <> [] then
+					Some (Winner Blue)
+				else if r_remaining <> [] && b_remaining = [] && y <> [] then
+					Some (Winner Red)
+				else
+					None
 		in
-	(won, (r_data, b_data) , Some(Request(r_req)), Some(Request(b_req)))
+	(won, (r_data, b_data) , r_comm, b_comm)
 	
 
 let init_game () =
@@ -240,7 +261,7 @@ let init_game () =
 	let slist = List.map steammonify (read_lines "steammon.txt") in
 	pool := slist; 
 	(*first_pick*)
-	let c = if Random.int 2 = 0 then Red else Blue in
+	let c = if (Random.int 2) = 0 then Red else Blue in
 	let initItems = [] in
 	let red = {id = Red; steammons = []; items = initItems} in
 	let blue = {id = Blue; steammons = []; items = initItems} in
