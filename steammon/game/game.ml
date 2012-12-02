@@ -182,20 +182,20 @@ let handle_step g ra ba : game_output =
 		let p = List.hd t.steammons in
 		(float_of_int !p.speed) *. (mod_constant_spd !p.mods.speed_mod)
 	in
-	let () = if List.length !r_old.steammons = cNUM_PICKS && List.length !b_old.steammons = cNUM_PICKS then
+	let () = if List.length !r_old.steammons < cNUM_PICKS || List.length !b_old.steammons < cNUM_PICKS then
 		(
-		  r_old := update_team ba !b_old r_old;
-		  b_old := update_team ra !r_old b_old;
+		  r_old := update_team ra !r_old b_old;
+		  b_old := update_team ba !b_old r_old;
 		)
   	else
     	let r_spd = modified_speed !r_old in
     	let b_spd = modified_speed !b_old in
     	if r_spd < b_spd then
-    		(b_old := update_team ra !r_old b_old;
-    		r_old := update_team ba !b_old r_old;)
+    		(b_old := update_team ba !r_old b_old;
+    		r_old := update_team ra !b_old r_old;)
     	 else
-    		(r_old := update_team ba !b_old r_old;
-    		b_old := update_team ra !r_old b_old;)
+    		(r_old := update_team ra !r_old b_old;
+    		b_old := update_team ba !b_old r_old;)
 	in
 	let x  = deref_list (!r_old.steammons) and y = deref_list (!b_old.steammons) in 
 	let r_data = (x, deref_list !r_old.items) in
