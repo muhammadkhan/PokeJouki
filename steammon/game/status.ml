@@ -8,8 +8,6 @@ but not effects such as self-attacks
 
 *)
 
-(*This occurs at the end of the turn *)
-(*We need to make sure that this occurs at the end of the turn*)
 (*If the steammon is frozen, it cannot attack that turn*)
 let frozen_effect (p : steammon ref) : unit = 
 	if List.mem Frozen !p.status then

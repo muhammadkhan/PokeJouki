@@ -56,10 +56,12 @@ let compute_points (ps : steammon list) : (steammon * float) list =
 			in
 			List.fold_left f 0 (get_atk_lst p)
 		in
-		let hp_pts = ((float_of_int p.max_hp) /. 2.) /. 100. in
+		let hp_pts = 
+			if (p.max_hp < 520 && p.max_hp > 300) then ((float_of_int p.max_hp)) /. 50.
+			else 0. in
 		let as_pts = (float_of_int((atk_eff p) + p.speed)) /. 100. in
 		let d_pts = (float_of_int p.defense) /. 50. in
-		( p, (float_of_int stab_bonus)+. hp_pts +. as_pts +. d_pts )
+		( p, (float_of_int stab_bonus) +. hp_pts +. as_pts +. d_pts )
 	in
 	List.map points_of ps
 
@@ -138,12 +140,12 @@ let score_attack (a : attack) (at :steammon) (df : steammon) : float =
 			   (try (valOf(at.second_type)) = a.element with _ -> false) then cSTAB_BONUS
 			else 1.0 in
 		if x *. y >= 2.0 then 10000.
+		else if x = 0. || y = 0. then 0.
 		else
 			(float_of_int(a.power)) +. x +. y +. z
 
 (*This picks the most powerful attack to use*)
 (*The idea is that we want to damage them every single turn*)
-(*This will output the name of the attack that we want *)
 let power_attack (gs: game_status_data) (s:steammon) (c : color) : string = 
 	let (r, b) = gs in
 	let my_team = if c = Red then r else b in

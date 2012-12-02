@@ -1,9 +1,10 @@
 open Definitions
 open Util
 
-(*This State module will be used to keep track of the state of the game*)
-(*This includes using items, attacking, switching pokemon, keeping track*)
-(*of properties like HP, PP, inventory, etc*)
+(**
+This State module will be used to keep track of the state of the game
+This includes using items, attacking, switching pokemon, keeping track
+of properties like HP, PP, inventory, etc *)
 
 let get_hp (p : steammon) = p.curr_hp
 

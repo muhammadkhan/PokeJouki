@@ -9,8 +9,6 @@ type team = {
 	items: int ref list (*mutable inventory*)
 }
 
-(* You have to implement this. Change it from int to yout own state type*)
-
 (*first team = red, second team = blue*)
 type game = team ref * team ref
 
@@ -43,7 +41,6 @@ let game_from_data game_data : game =
 let rec update_team cmd (old : team) (old2 : team ref) : team =
 		match cmd with
 		| Action(act) -> (
-			(*have an if !pool = [] then ... else ()*)
 				match act with
 			  | PickSteammon(str) -> 
 					  let (newlst, newpool) = List.partition (fun p -> p.species = str) (!pool) in
@@ -57,7 +54,6 @@ let rec update_team cmd (old : team) (old2 : team ref) : team =
 						Netgraphics.add_update(UpdateSteammon(newmon.species, newmon.curr_hp, newmon.max_hp,old.id));
 					  {id=old.id; steammons = (ref newmon)::(old.steammons); items = old.items}
 				| PickInventory(inv) ->
-					  print_string "enter pick inventory";
 						{id = old.id; steammons = old.steammons;
 						items = reref_list inv}
 				| SwitchSteammon(str) ->
