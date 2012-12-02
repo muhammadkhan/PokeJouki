@@ -22,7 +22,9 @@ let first_pick = ref true
 
 let red_to_start = ref true and blue_to_start = ref true
 
-let pick_num = ref 0
+let pick_num = ref (-1)
+
+let first_color = ref Red
 
 let game_datafication g : game_status_data =
 	let (redTeam, blueTeam) = g in
@@ -178,7 +180,7 @@ let rec update_team cmd (old : team) (old2 : team ref) : team =
 (*All of these should be able to be done if the pool in initialized properly*)
 let handle_step g ra ba : game_output =
 	let (r_old, b_old) = g in
-	let modified_speed (t : team) =
+	(*let modified_speed (t : team) =
 		let p = List.hd t.steammons in
 		(float_of_int !p.speed) *. (mod_constant_spd !p.mods.speed_mod)
 	in
@@ -193,10 +195,10 @@ let handle_step g ra ba : game_output =
     	if r_spd < b_spd then
     		(b_old := update_team ba !r_old b_old;
     		r_old := update_team ra !b_old r_old;)
-    	 else
-    		(r_old := update_team ra !r_old b_old;
-    		b_old := update_team ba !b_old r_old;)
-	in
+    	 else*)
+    		r_old := update_team ra !r_old b_old;
+    		b_old := update_team ba !b_old r_old;
+	(*in*)
 	let x  = deref_list (!r_old.steammons) and y = deref_list (!b_old.steammons) in 
 	let r_data = (x, deref_list !r_old.items) in
 	let b_data = (y, deref_list !b_old.items) in
@@ -232,11 +234,12 @@ let handle_step g ra ba : game_output =
 	let r_comm = set_comm r_new b_new in
 	let b_comm = set_comm b_new r_new in*)
 	let set_comms (red : team) (blue : team) : (command option) * (command option) =
-		let blue_picks = [1;4;5;8;9;12;13;16;17;20] and red_picks = [2;3;6;7;10;11;14;15;18;19] in
+		(*let blue_picks = [1;4;5;8;9;12;13;16;17;20] and red_picks = [2;3;6;7;10;11;14;15;18;19] in*)
 		incr(pick_num);
-		if List.mem !pick_num blue_picks && List.length blue.steammons < cNUM_PICKS then
+		print_endline ("pick_num is " ^ (string_of_int !pick_num) ^ " right now");
+		if (!pick_num / 2) mod 2 = 1 && List.length blue.steammons < cNUM_PICKS then
 			(None, Some(Request(PickRequest(Blue, (r_data,b_data), !atks, !pool))))
-		else if List.mem !pick_num red_picks && List.length red.steammons < cNUM_PICKS then
+		else if (!pick_num / 2) mod 2 = 0 && List.length red.steammons < cNUM_PICKS then
 			 (Some(Request(PickRequest(Red, (r_data,b_data), !atks, !pool))), None)
 		else if red.items = [] && blue.items = [] then
 			(Some(Request(PickInventoryRequest(r_data,b_data))), Some(Request(PickInventoryRequest(r_data,b_data))))
@@ -332,6 +335,7 @@ let init_game () =
 	pool := slist; 
 	(*first_pick*)
 	let c = if (Random.int 2) = 0 then Red else Blue in
+	first_color := c;
 	let initItems = [] in
 	let red = ref {id = Red; steammons = []; items = initItems} in
 	let blue = ref {id = Blue; steammons = []; items = initItems} in
