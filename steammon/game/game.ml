@@ -125,20 +125,22 @@ let update_team cmd (old : team) (old2 : team ref) : team =
 							  (*This needs to take effects into account!!*)
 							  let battlemon_ref : steammon ref = List.hd old.steammons in
 								let battlemon : steammon = !battlemon_ref in
-								let atk1 = battlemon.first_attack in
-								let atk2 = battlemon.second_attack in
-								let atk3 = battlemon.third_attack in
-								let atk4 = battlemon.fourth_attack in
-								let atk : attack =
-									if atk1.name = str then atk1
-									else if atk2.name = str then atk2
-									else if atk3.name = str then atk3
-									else if atk4.name = str then atk3
+								let atk1 = ref !battlemon_ref.first_attack in
+								let atk2 = ref !battlemon_ref.second_attack in
+								let atk3 = ref !battlemon_ref.third_attack in
+								let atk4 = ref !battlemon_ref.fourth_attack in
+								let atk : attack ref =
+									if !atk1.name = str then atk1
+									else if !atk2.name = str then atk2
+									else if !atk3.name = str then atk3
+									else if !atk4.name = str then atk3
 									else failwith "not a valid attack"
 								in
+								State.change_pp_by atk (-1);
+								print_endline ("The attack " ^ !atk.name ^ " has " ^ (string_of_int !atk.pp_remaining) ^ " PP left");
 								let dfdr = List.hd (!old2.steammons) in
-								let dmg = int_of_float (Attack.final_attack (ref atk) battlemon_ref dfdr) in
-								Attack.apply_effect (ref atk) dfdr;
+								let dmg = int_of_float (Attack.final_attack atk battlemon_ref dfdr) in
+								Attack.apply_effect atk dfdr;
 								dfdr := State.change_hp_by !dfdr (-dmg);
 								let msg =
 									if dmg = 0 then "Miss =("
@@ -152,7 +154,7 @@ let update_team cmd (old : team) (old2 : team ref) : team =
 								else () in
 								Netgraphics.add_update(UpdateSteammon(!dfdr.species, !dfdr.curr_hp, !dfdr.max_hp, !old2.id));
 								Netgraphics.add_update (NegativeEffect(msg, !old2.id, dmg));
-								Netgraphics.add_update(Message(battlemon.species ^ " used " ^ atk.name ^ " on " ^ !dfdr.species ^ "!"));
+								Netgraphics.add_update(Message(battlemon.species ^ " used " ^ !atk.name ^ " on " ^ !dfdr.species ^ "!"));
 								old	
 				)
 			| _ -> old	

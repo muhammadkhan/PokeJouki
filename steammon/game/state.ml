@@ -22,14 +22,15 @@ let change_hp_by (p : steammon) (delta : int) : steammon = {
 	
 let get_pp (a : attack) = a.pp_remaining
 	
-let change_pp_by (a : attack) (delta : int) : attack = {
-	name = a.name; element = a.element; max_pp = a.max_pp;
+let change_pp_by (a : attack ref) (delta : int) : unit =
+	a := {
+	name = !a.name; element = !a.element; max_pp = !a.max_pp;
 	(*|||||||||||||||||||||||||||||||||||||*)
-	pp_remaining = a.pp_remaining + delta;
+	pp_remaining = (!a.pp_remaining + delta);
 	(*|||||||||||||||||||||||||||||||||||||*)
-	power = a.power; accuracy = a.accuracy;
-	crit_chance = a.crit_chance; effect = a.effect
-}
+	power = !a.power; accuracy = !a.accuracy;
+	crit_chance = !a.crit_chance; effect = !a.effect
+  }
 
 (*i = 1 changes attack, 2 speed, 3 defense, 4 accuracy*)
 let change_mods_by (p : steammon ref) (n : int) (i : int) : unit =
