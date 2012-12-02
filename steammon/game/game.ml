@@ -24,6 +24,8 @@ let first_pick = ref true
 
 let red_to_start = ref true and blue_to_start = ref true
 
+let pick_num = ref 0
+
 let game_datafication g : game_status_data =
 	let (redTeam, blueTeam) = g in
 	((deref_list redTeam.steammons, deref_list redTeam.items),
@@ -166,7 +168,7 @@ let handle_step g ra ba : game_output =
 	let r_data = (deref_list r_new.steammons, deref_list r_new.items) in
 	let b_data = (deref_list b_new.steammons, deref_list b_new.items) in
 	(*let valOf o = match o with Some x -> x | None -> failwith "sdoifjdsiofjdsiof" in*)
-	let set_comm t other_t =
+	(*let set_comm t other_t =
 		let team =
 			if t.id = Red then "Red" else "Blue"
 		in
@@ -195,7 +197,38 @@ let handle_step g ra ba : game_output =
 			Some(Request(ActionRequest(r_data,b_data))))
 	in
 	let r_comm = set_comm r_new b_new in
-	let b_comm = set_comm b_new r_new in
+	let b_comm = set_comm b_new r_new in*)
+	let set_comms (red : team) (blue : team) : (command option) * (command option) =
+		let blue_picks = [1;4;5;8;9;12;13;16;17;20] and red_picks = [2;3;6;7;10;11;14;15;18;19] in
+		incr(pick_num);
+		if List.mem !pick_num blue_picks && List.length blue.steammons < cNUM_PICKS then
+			(None, Some(Request(PickRequest(Blue, (r_data,b_data), !atks, !pool))))
+		else if List.mem !pick_num red_picks && List.length red.steammons < cNUM_PICKS then
+			 (Some(Request(PickRequest(Blue, (r_data,b_data), !atks, !pool))), None)
+		else if red.items = [] && blue.items = [] then
+			(Some(Request(PickInventoryRequest(r_data,b_data))), Some(Request(PickInventoryRequest(r_data,b_data))))
+		else if !red_to_start && !blue_to_start then
+			(red_to_start := false; blue_to_start := false;
+			(Some(Request(StarterRequest(r_data,b_data))), Some(Request(StarterRequest(r_data,b_data))))
+			)
+		else
+			(
+				let r = (ref (Some(Request(ActionRequest(r_data,b_data)))),
+				           ref (Some(Request(ActionRequest(r_data,b_data))))) in
+				let () =
+					if !(List.hd red.steammons).curr_hp = 0 then
+						(fst r) := Some(Request(StarterRequest(r_data,b_data)))
+					else ()
+				in
+				let () =
+					if !(List.hd blue.steammons).curr_hp = 0 then
+						(snd r) := Some(Request(StarterRequest(r_data,b_data)))
+					else ()
+				in
+				(!(fst r), !(snd r))
+			)
+	in
+	let (r_comm, b_comm) = set_comms r_new b_new in
 	let r_remaining = List.filter (fun s -> s.curr_hp > 0) x in
 	let b_remaining = List.filter (fun s -> s.curr_hp > 0) y in
 	let won =
