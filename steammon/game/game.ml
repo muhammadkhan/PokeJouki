@@ -12,7 +12,7 @@ type team = {
 (* You have to implement this. Change it from int to yout own state type*)
 
 (*first team = red, second team = blue*)
-type game = team * team
+type game = team ref * team ref
 
 let pool = ref []
 
@@ -28,14 +28,14 @@ let pick_num = ref 0
 
 let game_datafication g : game_status_data =
 	let (redTeam, blueTeam) = g in
-	((deref_list redTeam.steammons, deref_list redTeam.items),
-	(deref_list blueTeam.steammons, deref_list blueTeam.items))
+	((deref_list !redTeam.steammons, deref_list !redTeam.items),
+	(deref_list !blueTeam.steammons, deref_list !blueTeam.items))
 
 let game_from_data game_data : game = 
 	let ((r_slist, r_inv), (b_slist, b_inv)) = game_data in
-	let red_team = {id = Red; steammons = reref_list r_slist;
+	let red_team = ref {id = Red; steammons = reref_list r_slist;
 	    items = reref_list r_inv} in
-	let blue_team = {id = Blue; steammons = reref_list b_slist;
+	let blue_team = ref {id = Blue; steammons = reref_list b_slist;
 	    items = reref_list b_inv} in
 	(red_team, blue_team)
 	
@@ -75,7 +75,7 @@ let update_team cmd (old : team) (old2 : team ref) : team =
 							{id = old.id; steammons = reref_list (mon::newtl);
 							items = old.items}
 						| UseItem(itm, str) -> (
-							  let sref=ref(steammon_of_string(deref_list old.steammons) str)in
+								let sref = List.find (fun r -> !r.species = str) old.steammons in
 									match itm with
 									| Ether ->
 										Item.use_Ether sref;
@@ -173,11 +173,11 @@ let update_team cmd (old : team) (old2 : team ref) : team =
 let handle_step g ra ba : game_output =
 	let (r_old, b_old) = g in
 	
-	let r_new = update_team ra r_old (ref b_old) in
-	let b_new = update_team ba b_old (ref r_new) in
-	let x  = deref_list (r_new.steammons) and y = deref_list (b_new.steammons) in 
-	let r_data = (deref_list r_new.steammons, deref_list r_new.items) in
-	let b_data = (deref_list b_new.steammons, deref_list b_new.items) in
+	r_old := update_team ra !r_old b_old;
+	b_old := update_team ba !b_old r_old;
+	let x  = deref_list (!r_old.steammons) and y = deref_list (!b_old.steammons) in 
+	let r_data = (x, deref_list !r_old.items) in
+	let b_data = (y, deref_list !b_old.items) in
 	(*let valOf o = match o with Some x -> x | None -> failwith "sdoifjdsiofjdsiof" in*)
 	(*let set_comm t other_t =
 		let team =
@@ -239,7 +239,7 @@ let handle_step g ra ba : game_output =
 				(!(fst r), !(snd r))
 			)
 	in
-	let (r_comm, b_comm) = set_comms r_new b_new in
+	let (r_comm, b_comm) = set_comms !r_old !b_old in
 	let r_remaining = List.filter (fun s -> s.curr_hp > 0) x in
 	let b_remaining = List.filter (fun s -> s.curr_hp > 0) y in
 	let won =
@@ -311,8 +311,8 @@ let init_game () =
 	(*first_pick*)
 	let c = if (Random.int 2) = 0 then Red else Blue in
 	let initItems = [] in
-	let red = {id = Red; steammons = []; items = initItems} in
-	let blue = {id = Blue; steammons = []; items = initItems} in
+	let red = ref {id = Red; steammons = []; items = initItems} in
+	let blue = ref {id = Blue; steammons = []; items = initItems} in
 	Netgraphics.send_update InitGraphics;
 	Netgraphics.add_update (SetFirstAttacker c);
 	((red,blue), c, alist, slist)
