@@ -33,7 +33,7 @@ let crit_hit_mult (a : attack) : float =
 	else 1.0	 	 
 
 (*This applies the effect of an attack to the steammon, only if the attack hits *)
-let apply_effect (a : attack ref) (df : steammon ref) : unit =
+let apply_effect (at_c : color) (at : steammon ref) (a : attack ref) (df : steammon ref) : unit =
 	let (eff,chance) = !a.effect in 
 	let rand = Random.int 100 in
 	if rand < chance then 
@@ -71,7 +71,30 @@ let apply_effect (a : attack ref) (df : steammon ref) : unit =
 				add_eff Frozen;
 				Netgraphics.add_update(SetStatusEffects(!df.species, !df.status));
 				Netgraphics.add_update(Message(!df.species ^ " IS ZARDOZLY FROZEN!!!!!!!!!!"))
-			| _ -> () (*TODO: change*)
+			| SelfAttackUp1 ->
+					State.change_mods_by at (!at.mods.attack_mod + 1) 1;
+					Netgraphics.add_update(PositiveEffect("Attack +1!", at_c, 0))
+			| SelfDefenseUp1 ->
+				State.change_mods_by at (!at.mods.defense_mod + 1) 3;
+				Netgraphics.add_update(PositiveEffect("Defense +1!", at_c, 0))
+			| SelfSpeedUp1 ->
+				State.change_mods_by at (!at.mods.speed_mod + 1) 1;
+				Netgraphics.add_update(PositiveEffect("Speed +1!", at_c, 0))
+			| SelfAccuracyUp1 ->
+				State.change_mods_by at (!at.mods.accuracy_mod + 1) 1;
+				Netgraphics.add_update(PositiveEffect("Accuracy +1!", at_c, 0))
+			| OpponentAttackDown1 ->
+					State.change_mods_by df (!df.mods.attack_mod - 1) 1;
+					Netgraphics.add_update(NegativeEffect("Attack -1 =/", opposite_color at_c, 0))
+			| OpponentDefenseDown1 ->
+				State.change_mods_by df (!df.mods.defense_mod - 1) 3;
+				Netgraphics.add_update(NegativeEffect("Defense -1 =/", opposite_color at_c, 0))
+			| OpponentSpeedDown1 ->
+				State.change_mods_by df (!df.mods.speed_mod - 1) 2;
+				Netgraphics.add_update(NegativeEffect("Speed -1 =/", opposite_color at_c, 0))
+			| OpponentAccuracyDown1 ->
+				State.change_mods_by df (!df.mods.accuracy_mod - 1) 4;
+				Netgraphics.add_update(NegativeEffect("Accuracy -1 =/", opposite_color at_c, 0))
 	else ()
 
 let normal_attack (at : steammon) (a : attack ref) (df: steammon) : float =

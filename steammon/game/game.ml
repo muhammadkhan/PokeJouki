@@ -151,7 +151,7 @@ let rec update_team cmd (old : team) (old2 : team ref) : team =
 							);
 						let dfdr = List.hd (!old2.steammons) in
 						let dmg = int_of_float (Attack.final_attack atk battlemon_ref dfdr) in
-						Attack.apply_effect atk dfdr;
+						Attack.apply_effect old.id battlemon_ref atk dfdr;
 						dfdr := State.change_hp_by !dfdr (-dmg);
 						let msg =
 							if dmg = 0 then "Miss =("
