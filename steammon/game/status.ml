@@ -64,4 +64,3 @@ let unparalyze (p : steammon ref) : unit =
 		p := change_speed (!p) (!p.speed * cPARALYSIS_SLOW)
 	else
 		()
-(*create a separate confused attack within the attack module *)																										

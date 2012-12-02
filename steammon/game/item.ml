@@ -13,24 +13,6 @@ let use_Ether (ar : attack ref) : unit =
 	if !ar.pp_remaining > !ar.max_pp then
 		change_pp_by ar (!ar.max_pp - !ar.pp_remaining)
 	else ()
-	(*p :=  
-		{species = (!p).species; 
-		 curr_hp = (!p).curr_hp;
-		 max_hp = (!p).max_hp; 
-		 first_type = (!p).first_type;
-		 second_type = (!p).second_type; 
-		 first_attack = !p.first_attack;
-		 second_attack = !p.second_attack;
-		 third_attack = change_pp_by (ref((!p).third_attack)) (5);
-		 fourth_attack = change_pp_by (ref((!p).fourth_attack)) (5);
-		 attack = (!p).attack;
-		 spl_attack = (!p).spl_attack;
-		 defense = (!p).defense;
-		 spl_defense = (!p).spl_defense;
-		 speed = (!p).speed;
-		 status = (!p).status;
-		 mods = (!p).mods
-		};*)
 
 (*using a maxPotion on a pokemon*)	
 let use_maxPotion (p : steammon ref) : unit =

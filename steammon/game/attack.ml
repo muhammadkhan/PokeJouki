@@ -73,9 +73,6 @@ let apply_effect (a : attack ref) (df : steammon ref) : unit =
 			| _ -> () (*TODO: change*)
 	else ()
 
-(*should this return float and return the damage*)
-(*or should it return unit and simply update the values accordingly*)
-(*We can update this for steammon refs too*)
 let normal_attack (at : steammon) (a : attack ref) (df: steammon) : float =
 	let pow = float_of_int !a.power in
 	let (attackersattack, opponentsdef) =
@@ -97,7 +94,6 @@ let normal_attack (at : steammon) (a : attack ref) (df: steammon) : float =
 	let happens = Random.int 100 in
 	let acc' = (float_of_int !a.accuracy)*.(mod_constant_acc at.mods.accuracy_mod) in
 	if happens < (int_of_float acc') then
-		(*(a := State.change_pp_by (!a) (-1);*)
 	  (pow*.attackersattack*.crit_effect*.stab_bonus*.st_mult)/.opponentsdef
 	else 0.
 			
@@ -123,7 +119,6 @@ let atk_while_confused (a : attack ref) (at : steammon ref) (df : steammon ref):
 			0.
 		  else
 			 normal_attack !at a !df
-		   (*df := State.change_hp_by !df (0 - int_of_float(dmg));	*)	
 		)
 		
 let atk_while_asleep (a :attack ref) (at : steammon ref) (df : steammon ref) : float = 
