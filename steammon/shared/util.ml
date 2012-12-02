@@ -237,13 +237,47 @@ let steammon_of_string sl str =
 	try List.hd (List.filter (fun s -> s.species = str) sl)
 	with _ -> failwith "no such steammon"
 
-	
-(*This function is problem*)	
-let swap_steammon (sl : steam_pool) (str : string) =
-	let (p1, p2) = List.partition (fun s -> s.species = str) sl in
-	List.rev_append (List.rev p1) p2
-
 (*cannot keep this in util, move elsewhere*)		
 let deref_list (lst : 'a ref list) : 'a list = List.map (fun x -> !x) lst
 
 let reref_list (lst : 'a list) : 'a ref list = List.map (fun x -> ref x) lst
+
+let mod_constant_atk (i : int) : float =
+	match i with
+		| 1 -> Constants.cATTACK_UP1
+		| 2 -> Constants.cATTACK_UP2
+		| 3 -> Constants.cATTACK_UP3
+		| (-1) -> Constants.cATTACK_DOWN1
+		| (-2) -> Constants.cATTACK_DOWN2
+		| (-3) -> Constants.cATTACK_DOWN3
+		| _ -> 1.
+
+let mod_constant_def (i : int) : float =
+	match i with
+		| 1 -> Constants.cDEFENSE_UP1
+		| 2 -> Constants.cDEFENSE_UP2
+		| 3 -> Constants.cDEFENSE_UP3
+		| (-1) -> Constants.cDEFENSE_DOWN1
+		| (-2) -> Constants.cDEFENSE_DOWN2
+		| (-3) -> Constants.cDEFENSE_DOWN3
+		| _ -> 1.
+
+let mod_constant_spd (i : int) : float =
+	match i with
+		| 1 -> Constants.cSPEED_UP1
+		| 2 -> Constants.cSPEED_UP2
+		| 3 -> Constants.cSPEED_UP3
+		| (-1) -> Constants.cSPEED_DOWN1
+		| (-2) -> Constants.cSPEED_DOWN2
+		| (-3) -> Constants.cSPEED_DOWN3
+		| _ -> 1.
+
+let mod_constant_acc (i : int) : float =
+	match i with
+		| 1 -> Constants.cACCURACY_UP1
+		| 2 -> Constants.cACCURACY_UP2
+		| 3 -> Constants.cACCURACY_UP3
+		| (-1) -> Constants.cACCURACY_DOWN1
+		| (-2) -> Constants.cACCURACY_DOWN2
+		| (-3) -> Constants.cACCURACY_DOWN3
+		| _ -> 1.
