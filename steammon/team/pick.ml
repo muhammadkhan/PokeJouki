@@ -15,21 +15,21 @@ let get_atk_lst (s : steammon) =
 		[s.first_attack; s.second_attack; s.third_attack; s.fourth_attack]
 
 
-(**First we design all of the helper 
+(*(**First we design all of the helper 
 functions pertaining to picking pokemon*)
 let oppo_pkmn = ref [] 
-let pick_num = ref 0 
+let pick_num = ref 0 *)
 
-(*returns the pokemon that were chosen since we last saw the steam_pool *)
+(*(*returns the pokemon that were chosen since we last saw the steam_pool *)
 let find_missing (o: steam_pool) (n: steam_pool) : steammon list = 
 	let find acc p = 
 		if List.mem p n then acc
 		else p::acc
 	in
-	List.fold_left find [] o
+	List.fold_left find [] o*)
 
 	
-(*This is the same function but making use of the accessible game_data*)
+(*(*This is the same function but making use of the accessible game_data*)
 (*o is the list of pokemon we know the opponent has*)
 let find_newbies (o : steam_pool) (n : game_status_data) (c:color) : steam_pool = 
 	let (op_team_o,op_team_n) =
@@ -42,7 +42,7 @@ let find_newbies (o : steam_pool) (n : game_status_data) (c:color) : steam_pool 
 		if List.mem p op_team_n then acc
 		else p::acc				
 	in
-	List.fold_left find [] op_team_o													
+	List.fold_left find [] op_team_o		*)											
 												
 (****___________Everything after this is valid_______________ *****)								
 
@@ -60,7 +60,7 @@ let find_weakness (s:steammon) : steamtype list =
 	in
 	List.fold_left f [] types
 
-(**This narrows down to the 
+(* (**This narrows down to the 
 types of pokemon that we know our opponents pokemon are weak to*)
 let narrow_pick_type (i : int ref) (sp :steam_pool) : steamtype list = 
   if !i = 0 then 
@@ -75,17 +75,17 @@ let narrow_pick_type (i : int ref) (sp :steam_pool) : steamtype list =
 		 in
 		 incr(i);
 		 oppo_pkmn := sp;
-		 List.fold_left f [] op_picks)  
+		 List.fold_left f [] op_picks) *) 
 
 (*This is going to be valid*)
 (*outputs a list of pokemon which adhere to the types picked *)
-let pick_types (t_lst : steamtype list) (sp: steam_pool) = 
+(*let pick_types (t_lst : steamtype list) (sp: steam_pool) = 
   let filter_help (x : steammon) = 
 		(List.mem (valOf x.first_type)	t_lst) || 
 		(if x.second_type = None then false 
 		 else List.mem (valOf x.second_type) t_lst) 
   in
-	List.filter filter_help sp
+	List.filter filter_help sp*)
 
 (*returns the effective attack we should use to consider points*)
 let atk_eff (p : steammon) : int =
@@ -159,12 +159,12 @@ let most_suitable_steammon (lst : (steammon*float) list) : steammon =
 		| [] -> failwith "this has no head"
 
 (*This is the final method, where we pick the pokemon we want to select next*)
-let pick_stmn (gs: game_status_data) (c:color) (sp:steam_pool) : steammon = 
+(*let pick_stmn (gs: game_status_data) (c:color) (sp:steam_pool) : steammon = 
   let added_pkmn = find_newbies !oppo_pkmn gs c in 
 	 (*All of the types that are super effective*)
     let effective_types = narrow_pick_type pick_num added_pkmn in 
 		let valid_pkmn = pick_types effective_types sp in 
-		most_suitable_steammon (compute_points valid_pkmn)
+		most_suitable_steammon (compute_points valid_pkmn)*)
 		
 (*------ This section is geared towards a different style of pick ------*)
 
@@ -186,7 +186,7 @@ let smart_pick (gs:game_status_data) (c : color) (sp : steam_pool) : steammon =
 						
 (*This is our final picking method, which results in a smarter pick.*)																		
 let revised_pick  (gs : game_status_data) (c : color) (sp : steam_pool) : steammon = 
-	let (r , b) = gs in 
+	let (r, b) = gs in 
 	let (op_mons, _) = if c = Red then b else r in 
 	  match op_mons with
 			| [] -> smart_pick gs c sp
@@ -216,19 +216,21 @@ let use_potion (s : steammon) : bool =
 1. super-effectiveness
 2. STAB bonus
 3. initial damage*)
+(*Rework*)
 let score_attack (a : attack) (at :steammon) (df : steammon) : float =
-	if a.power < 20 then 1.0
+	(*if a.power = 0 then 0.
 	else 
     let x =
-  		 weakness (valOf(df.first_type)) a.element in
-  	let y = try weakness (valOf(df.second_type)) a.element with _ -> 1.0 in	
+  		 weakness a.element (valOf(df.first_type)) in
+  	let y = try weakness a.element (valOf(df.second_type)) with _ -> 1.0 in	
   	let z = 
 			if (valOf (at.first_type)) = a.element 
 			  then cSTAB_BONUS 
 			else if 
 			   (try (valOf(at.second_type)) = a.element with _ -> false) then cSTAB_BONUS
 			else 1.0 in	
-  	(float_of_int(a.power)) *. x *. y *. z
+  	(float_of_int(a.power)) +. x +. y +. z*)
+		float_of_int (a.power)
 
 (*This picks the most powerful attack to use*)
 (*The idea is that we want to damage them every single turn*)
@@ -241,22 +243,25 @@ let power_attack (gs: game_status_data) (s:steammon) (c : color) : string =
 	let (op_mons, _) = op_team in  
 	  match mons with
 		|h::_ ->
-			(
+			(	
 			(*We now have all the attacks of the pokemon*)
 			(*We should filter the ones that have no pp left*)
-			let atks = List.filter (fun x -> x.pp_remaining > 0) (get_atk_lst h) in 
-			let final_atk = ref "" in
-			let score = ref 0. in  
-			(*using the score function above, we will fold over the list *)  
-			let f_atk (a : attack)  =																																
-				if (score_attack a h (List.hd op_mons)) > !score  then
-				 (score := score_attack a h (List.hd op_mons);
-					final_atk := a.name;)
-				else ()																																																										
-			in
-			List.iter f_atk atks;
-			!final_atk)
-		| _ -> failwith "This cannot happen"
+			let atks = (*List.filter (fun x -> x.pp_remaining > 0)*) (get_atk_lst h) in
+			match List.filter (fun x -> x.name = "Psychic") atks with
+				| [x] -> x.name
+				| _ ->  
+    			let final_atk = ref (s.second_attack).name in
+    			let score = ref 0. in  
+    			(*using the score function above, we will fold over the list *)  
+    			let f_atk (a : attack)  =																																
+    				if (score_attack a h (List.hd op_mons)) > !score && (a.pp_remaining > 0)  then
+    				 (score := score_attack a h (List.hd op_mons);
+    					final_atk := a.name;)
+    				else ()																																																										
+    			in
+    			List.iter f_atk atks;
+    			!final_atk)
+    | _ -> failwith "This cannot happen"
 
 (*Picks the attack that will apply a status to the victim*)
 
@@ -281,33 +286,33 @@ let power_attack (gs: game_status_data) (s:steammon) (c : color) : string =
     | _ -> failwith "Not possible"
 
 *)
-
 																																									
 (*----- Functions to initiate a switch/pick a starter steammon  -----*)	
 
 (**Amongst our own team we are picking the next steammon
  such that we are able to have a type advantage*)
+(*REWORK!!!!!!*)
 let switch_for_advantage (gs: game_status_data) (c:color) : steammon =
   let (r, b) = gs in 
-	  let my_team = if c = Red then r else b in 
-	    let (mons,_) = my_team in 
-  revised_pick gs c mons				
-									
-																											
-(*(*We will only switch for advantage*)
-let switch_for_advantage (gs : game_status_data) (c: color) : steammon = 
-	let (r,b) = gs in 
-	(*We find the opposing team*)
-	let op_team = if c  = Red then b else r in 
-	  let (mons , _ ) = op_team in 
-		match mons with
-		| h::_ -> 
-			(*We find the weaknesses to the current pokemon*)
-			let weak_to = find_weakness h in
-			let y = List.filter (fun x -> (List.mem x.first_type weak_to)) (fst(r)) in
-			if y <> [] then List.hd y else failwith "no advantages left!"
+	  let (my_team,op_team) = if c = Red then (r,b) else (b,r) in 
+	    let (mons,_) = my_team and (op_mons,_) = op_team in
+			let lst = List.filter (fun x -> x.curr_hp > 0) mons in
+			(* the weaknesses of the pokemon*)
+			let t_weak = find_weakness (List.hd(op_mons)) in
+			let f x = 
+				let f_t = valOf(x.first_type) in
+				match x.second_type with
+					| None -> 
+						List.mem f_t t_weak
+					| Some z ->
+						(List.mem f_t t_weak)	|| (List.mem z t_weak)
+				in
+				let lst' = List.filter f lst in
+				try List.hd lst' with _ -> List.hd lst 		 
 			
-	  | _ -> failwith "no steammon left to choose!!" *) 																						
+			(*Want to make sure that we are not just picking the head every time*)
+     (* try revised_pick gs c lst with _ -> List.hd lst*) 				
+																															
 																								
 																										
 																												
