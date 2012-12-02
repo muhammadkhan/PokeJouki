@@ -15,7 +15,7 @@ http://kotaku.com/5920285/
 five-tips-for-forming-the-perfect-pokemon-team-
 from-the-greatest-player-in-the-world
 *)
-let potion = ref false
+let potion = ref true
 
 let handle_request c r = 
 	match r with
@@ -35,19 +35,36 @@ let handle_request c r =
 			  PickInventory(Pick.pick_items)
 		| ActionRequest(gr) ->
 			let (r,b) = gr in 
-			let my_team = if c = Red then r else b in
-			let (mons, _)  = my_team in
-			  match mons with
-					| h::_ ->
-						(if (use_potion h) && not (!potion) then UseItem(MaxPotion, h.species)
-						 else
-							 let s = power_attack gr h c in
-							 (*if s.power = 0 then
-								let y = List.filter (fun x -> x <> s && x.pp_remaining > 0) (get_atk_lst h) in
-								UseAttack((List.hd y).name)
-							 else*) 
-							   UseAttack(s))
-					| _ -> failwith "Should not happen"			
+			let (my_team, op_team) = if c = Red then (r,b) else (b,r) in
+			  match my_team with
+				| (mons, [_;l;m;_;_;_;_;_]) -> 
+        			  let (op_mons, _) = op_team in
+        			  (match mons with
+        					| h::_ ->
+        						(let fainted = List.filter (fun x -> x.curr_hp = 0) mons in
+        						if (List.length fainted > 2 && (m > 0) ) then 
+											UseItem(Revive, (List.hd(fainted)).species)
+										else	
+          						(if (use_potion h) && (!potion) && (l > 0) then
+          							(potion := false;
+          							UseItem(MaxPotion, h.species))
+          						 else
+          							 (* if we are weak and there is another better choice*)
+          							 (let x = 
+          								match (List.hd (op_mons)).second_type with
+          									| None -> 
+          										weakness (valOf((List.hd op_mons).first_type)) (valOf(h.first_type)) 
+          									| Some y -> 
+          										weakness y (valOf(h.first_type)) +. 
+          										  weakness (valOf((List.hd op_mons).first_type)) (valOf(h.first_type)) in 
+          						   if (use_potion h && (x >= 2.0)) then
+          								let s = switch_for_advantage gr c in 
+          								  SwitchSteammon(s.species)								
+          							 else 	
+            							 let s = power_attack gr h c in
+            							   UseAttack(s))))
+					         | _ -> failwith "hello")
+				| _ -> failwith "nope"
+
 
 let () = run_bot handle_request
-
