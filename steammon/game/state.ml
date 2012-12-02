@@ -34,8 +34,9 @@ let change_pp_by (a : attack ref) (delta : int) : unit =
 
 (*i = 1 changes attack, 2 speed, 3 defense, 4 accuracy*)
 let change_mods_by (p : steammon ref) (n : int) (i : int) : unit =
-  let change_mods (m : modifier) (n : int) (i : int): modifier = 
-	  match i with
+  let change_mods (m : modifier) (nn : int) (i : int): modifier = 
+	  let n = if nn > 3 then 3 else if n < (-3) then (-3) else nn in
+		match i with
 	  | 1 -> 
   		{attack_mod = n;
   		 speed_mod = m.speed_mod;
@@ -77,7 +78,7 @@ let change_mods_by (p : steammon ref) (n : int) (i : int) : unit =
 		 defense = (!p).defense;
 		 spl_defense = (!p).spl_defense;
 		 speed = (!p).speed;
-		 status = [];
+		 status = !p.status;
 		 mods = change_mods (!p).mods n i;
 		}	 	
 

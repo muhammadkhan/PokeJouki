@@ -18,8 +18,6 @@ let pool = ref []
 
 let atks = ref []
 
-let current_out : steammon option ref = ref None
-
 let first_pick = ref true
 
 let red_to_start = ref true and blue_to_start = ref true
@@ -40,7 +38,7 @@ let game_from_data game_data : game =
 	(red_team, blue_team)
 	
 (*This function calculates the next iteration for the Team*)	
-let update_team cmd (old : team) (old2 : team ref) : team =
+let rec update_team cmd (old : team) (old2 : team ref) : team =
 		match cmd with
 			| Action(act) -> (
 				(*have an if !pool = [] then ... else ()*)
@@ -60,7 +58,11 @@ let update_team cmd (old : team) (old2 : team ref) : team =
 							print_string "enter pick inventory";
 							{id = old.id; steammons = old.steammons;
 							items = reref_list inv}
-						| SwitchSteammon(str)
+						| SwitchSteammon(str) ->
+							let h = List.hd old.steammons in
+							h := State.change_status_list !h (List.filter (fun x -> x <> Confused) !h.status);
+							List.iter (State.change_mods_by h 1) [1;2;3;4];
+							update_team (Action(SelectStarter str)) old old2
 						| SelectStarter(str) ->
 							print_endline("enter switch");
 							let (newlst, newtl) = List.partition(fun x -> x.species = str) (deref_list old.steammons) in
@@ -71,16 +73,20 @@ let update_team cmd (old : team) (old2 : team ref) : team =
 							in
 							print_endline("exit switch");
 							Netgraphics.add_update (SetChosenSteammon (mon.species));
-							current_out := Some mon;
 							{id = old.id; steammons = reref_list (mon::newtl);
 							items = old.items}
 						| UseItem(itm, str) -> (
 								let sref = List.find (fun r -> !r.species = str) old.steammons in
 									match itm with
 									| Ether ->
-										Item.use_Ether sref;
+										let ar1 = ref (!sref.first_attack) in
+										let ar2 = ref (!sref.second_attack) in
+										let ar3 = ref (!sref.third_attack) in
+										let ar4 = ref (!sref.fourth_attack) in
+										List.iter Item.use_Ether [ar1;ar2;ar3;ar4];
 										State.change_inventory old.items (-1) 0;
 										Netgraphics.add_update(PositiveEffect("Ether!", old.id, 0));
+										Netgraphics.add_update(Message(!sref.species ^ " used Ether!"));
 										old
 									| MaxPotion ->
 										Item.use_maxPotion sref; 
@@ -215,7 +221,7 @@ let handle_step g ra ba : game_output =
 		if List.mem !pick_num blue_picks && List.length blue.steammons < cNUM_PICKS then
 			(None, Some(Request(PickRequest(Blue, (r_data,b_data), !atks, !pool))))
 		else if List.mem !pick_num red_picks && List.length red.steammons < cNUM_PICKS then
-			 (Some(Request(PickRequest(Blue, (r_data,b_data), !atks, !pool))), None)
+			 (Some(Request(PickRequest(Red, (r_data,b_data), !atks, !pool))), None)
 		else if red.items = [] && blue.items = [] then
 			(Some(Request(PickInventoryRequest(r_data,b_data))), Some(Request(PickInventoryRequest(r_data,b_data))))
 		else if !red_to_start && !blue_to_start then

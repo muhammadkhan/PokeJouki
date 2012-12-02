@@ -1,6 +1,6 @@
 open Definitions
 
-val use_Ether : steammon ref -> unit
+val use_Ether : attack ref -> unit
 
 val use_maxPotion : steammon ref -> unit
 

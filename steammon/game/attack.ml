@@ -84,7 +84,8 @@ let normal_attack (at : steammon) (a : attack ref) (df: steammon) : float =
 			| Water
 			| Psychic
 			| Ghost -> (float_of_int at.spl_attack, float_of_int df.spl_defense)
-			| _ -> (float_of_int at.attack, float_of_int df.defense)
+			| _ -> ((float_of_int at.attack)*.(mod_constant_atk at.mods.attack_mod),
+			        (float_of_int df.defense)*.(mod_constant_def (df.mods.defense_mod)))
 	in
 	let crit_effect = crit_hit_mult !a in
 	let stab_bonus =
@@ -94,7 +95,8 @@ let normal_attack (at : steammon) (a : attack ref) (df: steammon) : float =
 	in
 	let st_mult = find_atk_mult !a df in
 	let happens = Random.int 100 in
-	if happens < !a.accuracy then
+	let acc' = (float_of_int !a.accuracy)*.(mod_constant_acc !a.mods.accuracy_mod) in
+	if happens < (int_of_float acc') then
 		(*(a := State.change_pp_by (!a) (-1);*)
 	  (pow*.attackersattack*.crit_effect*.stab_bonus*.st_mult)/.opponentsdef
 	else 0.
@@ -152,16 +154,3 @@ let final_attack (a : attack ref) (at : steammon ref) (df : steammon ref) : floa
 	else if List.mem Frozen !at.status then (Status.frozen_effect at; 0.)
 	else if List.mem Confused !at.status then atk_while_confused a at df
 	else normal_attack (!at) a (!df)
-		 
-				
-						
-								
-										
-												
-														
-																
-																		
-																				
-																						
-																								
-																												

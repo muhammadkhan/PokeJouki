@@ -8,11 +8,11 @@ Should the state module be used here?
 *)
 
 (*Using an ether on a pokemon*)		
-let use_Ether (p: steammon ref) : unit = 
-	change_pp_by (ref((!p).first_attack)) (5);
-	change_pp_by (ref((!p).second_attack)) (5);
-	change_pp_by (ref((!p).third_attack)) (5);
-	change_pp_by (ref((!p).fourth_attack)) (5);
+let use_Ether (ar : attack ref) : unit = 
+	change_pp_by ar 5;
+	if !ar.pp_remaining > !ar.max_pp then
+		change_pp_by ar (!ar.max_pp - !ar.pp_remaining)
+	else ()
 	(*p :=  
 		{species = (!p).species; 
 		 curr_hp = (!p).curr_hp;
@@ -31,7 +31,6 @@ let use_Ether (p: steammon ref) : unit =
 		 status = (!p).status;
 		 mods = (!p).mods
 		};*)
-  Netgraphics.add_update(Message(!p.species ^ " used Ether!")) 
 
 (*using a maxPotion on a pokemon*)	
 let use_maxPotion (p : steammon ref) : unit =
@@ -60,9 +59,9 @@ let use_FullHeal (p: steammon ref) : unit =
 (*This should just increment the specific modifier*)
 let use_X_item (i : item) (p : steammon ref) : unit = 
   match i with
-	| XAttack -> change_mods_by p 1 1;
-	| XSpeed -> change_mods_by p 1 2;
-	| XDefense -> change_mods_by p 1 3;
-	| XAccuracy -> change_mods_by p 1 4;
+	| XAttack -> change_mods_by p (!p.mods.attack_mod + 1) 1;
+	| XSpeed -> change_mods_by p (!p.mods.speed_mod + 1) 2;
+	| XDefense -> change_mods_by p (!p.mods.defense_mod + 1) 3;
+	| XAccuracy -> change_mods_by p (!p.mods.accuracy_mod + 1) 4;
 	| _ -> ()			  
 	
