@@ -178,9 +178,19 @@ let rec update_team cmd (old : team) (old2 : team ref) : team =
 (*All of these should be able to be done if the pool in initialized properly*)
 let handle_step g ra ba : game_output =
 	let (r_old, b_old) = g in
-	
-	r_old := update_team ra !r_old b_old;
-	b_old := update_team ba !b_old r_old;
+	let modified_speed (t : team) =
+		let p = List.hd t.steammons in
+		(float_of_int !p.speed) *. (mod_constant_spd !p.mods.speed_mod)
+	in
+	let r_spd = modified_speed !r_old in
+	let b_spd = modified_speed !b_old in
+	let () = if r_spd > b_spd then
+		(r_old := update_team ra !r_old b_old;
+		b_old := update_team ba !b_old r_old;)
+	 else
+		(b_old := update_team ba !b_old r_old;
+		r_old := update_team ra !r_old b_old;)
+	in
 	let x  = deref_list (!r_old.steammons) and y = deref_list (!b_old.steammons) in 
 	let r_data = (x, deref_list !r_old.items) in
 	let b_data = (y, deref_list !b_old.items) in
