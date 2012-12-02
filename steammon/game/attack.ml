@@ -95,8 +95,8 @@ let normal_attack (at : steammon) (a : attack ref) (df: steammon) : float =
 	let st_mult = find_atk_mult !a df in
 	let happens = Random.int 100 in
 	if happens < !a.accuracy then
-		(a := State.change_pp_by (!a) (-1);
-	  (pow*.attackersattack*.crit_effect*.stab_bonus*.st_mult)/.opponentsdef)
+		(*(a := State.change_pp_by (!a) (-1);*)
+	  (pow*.attackersattack*.crit_effect*.stab_bonus*.st_mult)/.opponentsdef
 	else 0.
 			
 (**This is the attack damage that happens 

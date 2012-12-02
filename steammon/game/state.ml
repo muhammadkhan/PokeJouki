@@ -126,6 +126,23 @@ let all_are_dead (sl : steammon list) : bool =
 	  in 
 		helper sl	
 
-
-
+let update_steammon_attack (p : steammon ref) (a : attack) (pos : int) : unit = (*pos = 1, 2, 3, 4 only*)
+  p := 
+		{species = (!p).species; 
+		 curr_hp = (!p).curr_hp;
+		 max_hp = (!p).max_hp; 
+		 first_type = (!p).first_type;
+		 second_type = (!p).second_type; 
+		 first_attack = if pos = 1 then a else (!p).first_attack;
+		 second_attack = if pos = 2 then a else (!p).second_attack;
+		 third_attack = if pos = 3 then a else (!p).third_attack;
+		 fourth_attack =  if pos = 4 then a else (!p).fourth_attack;
+		 attack = (!p).attack;
+		 spl_attack = (!p).spl_attack;
+		 defense = (!p).defense;
+		 spl_defense = (!p).spl_defense;
+		 speed = (!p).speed;
+		 status = !p.status;
+		 mods = !p.mods;
+		}	
 

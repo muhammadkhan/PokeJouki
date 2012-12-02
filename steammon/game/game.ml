@@ -125,18 +125,27 @@ let update_team cmd (old : team) (old2 : team ref) : team =
 							  (*This needs to take effects into account!!*)
 							  let battlemon_ref : steammon ref = List.hd old.steammons in
 								let battlemon : steammon = !battlemon_ref in
+								let first_atk = ref false in
+								let second_atk = ref false in
+								let third_atk = ref false in
+								let fourth_atk = ref false in
 								let atk1 = ref !battlemon_ref.first_attack in
 								let atk2 = ref !battlemon_ref.second_attack in
 								let atk3 = ref !battlemon_ref.third_attack in
 								let atk4 = ref !battlemon_ref.fourth_attack in
 								let atk : attack ref =
-									if !atk1.name = str then atk1
-									else if !atk2.name = str then atk2
-									else if !atk3.name = str then atk3
-									else if !atk4.name = str then atk3
+									if !atk1.name = str then (first_atk := true; atk1)
+									else if !atk2.name = str then (second_atk := true; atk2)
+									else if !atk3.name = str then (third_atk := true; atk3)
+									else if !atk4.name = str then (fourth_atk := true; atk3)
 									else failwith "not a valid attack"
 								in
 								State.change_pp_by atk (-1);
+								State.update_steammon_attack battlemon_ref !atk (
+									  if !first_atk then 1 else if !second_atk then 2
+										else if !third_atk then 3 else if !fourth_atk then 4
+										else failwith "not supposed to happen YO"
+									);
 								print_endline ("The attack " ^ !atk.name ^ " has " ^ (string_of_int !atk.pp_remaining) ^ " PP left");
 								let dfdr = List.hd (!old2.steammons) in
 								let dmg = int_of_float (Attack.final_attack atk battlemon_ref dfdr) in
