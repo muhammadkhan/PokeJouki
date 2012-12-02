@@ -14,9 +14,6 @@ let types = [Fire; Water; Ice
 let get_atk_lst (s : steammon) = 
 		[s.first_attack; s.second_attack; s.third_attack; s.fourth_attack]
 												
-(****___________Everything after this is valid_______________ *****)								
-
-(*Still valid*)
 (*finds the types that the pokemon is weak to*)	
 let find_weakness (s:steammon) : steamtype list = 
 	let f acc (t: steamtype) =
@@ -46,18 +43,8 @@ let atk_eff (p : steammon) : int =
 	if has_special_majority p then p.spl_attack
 	else p.attack
 
-(*Still valid*)
 (*returns the points, a measure of value, of the given steammon*)
 let compute_points (ps : steammon list) : (steammon * float) list =
-	(*stab bonus : +6 per attack that actually gives a stab bonus*)
-	(* poisons : +3 * accuracy * effect chance / 10000*)
-	(*confuses : + 2 ...........*)
-	(*sleep : +5...............*)
-	(*paralyzes : +2...............*)
-	(*freezes : +3.................*)
-	(*add hp / 100*)
-	(*add (effective_attack + speed) / 50*)
-	(*add defense / 100*)
 	let points_of (p : steammon) =
 		let stab_bonus =
 			let f r elem =
@@ -76,7 +63,6 @@ let compute_points (ps : steammon list) : (steammon * float) list =
 	in
 	List.map points_of ps
 
-(*Still valid*)
 (*picks the best steammon statistically*)
 let most_suitable_steammon (lst : (steammon*float) list) : steammon =
 	let choose ((acc : steammon list),(curMax : float)) (data : steammon * float) =
@@ -139,7 +125,6 @@ let use_potion (s : steammon) : bool =
 1. super-effectiveness
 2. STAB bonus
 3. initial damage*)
-
 let score_attack (a : attack) (at :steammon) (df : steammon) : float =
 	if a.power = 0 then 0.
 	else 
@@ -168,12 +153,7 @@ let power_attack (gs: game_status_data) (s:steammon) (c : color) : string =
 	  match mons with
 		|h::_ ->
 			(	
-			(*We now have all the attacks of the pokemon*)
-			(*We should filter the ones that have no pp left*)
-			let atks = (*List.filter (fun x -> x.pp_remaining > 0)*) (get_atk_lst h) in
-			(*match List.filter (fun x -> x.name = "Psychic") atks with
-				| [x] -> x.name
-				| _ ->  *)
+			    let atks =  (get_atk_lst h) in
     			let final_atk = ref (s.second_attack).name in
     			let score = ref 0. in  
     			(*using the score function above, we will fold over the list *)  
@@ -210,12 +190,7 @@ let switch_for_advantage (gs: game_status_data) (c:color) : steammon =
 				in
 				let lst' = List.filter f lst in
 				try List.hd lst' with _ -> List.hd lst 		 
-			
-			(*Want to make sure that we are not just picking the head every time*)
-     (* try revised_pick gs c lst with _ -> List.hd lst*) 				
-																															
-
-
+				
 (** This is our final bot module. 
 We only must rewrite our handle request function
 1. If we are to start, we must pick a good pokemon. 
@@ -247,35 +222,35 @@ let handle_request c r =
 			let (my_team, op_team) = if c = Red then (r,b) else (b,r) in
 			  match my_team with
 				| (mons, [_;l;m;_;_;_;_;_]) -> 
-        			  let (op_mons, _) = op_team in
-        			  (match mons with
-        					| h::_ ->
-        						(let fainted = List.filter (fun x -> x.curr_hp = 0) mons in
-        						if (List.length fainted > 2 && (m > 0) ) then 
-											UseItem(Revive, (List.hd(fainted)).species)
-										else	
-          						(if (use_potion h) && (!potion) && (l > 0) then
-          							(potion := false;
-												turns_out := !turns_out + 1;
-          							UseItem(MaxPotion, h.species))
-          						 else
-          							 (* if we are weak and there is another better choice*)
-          							 (let x = 
-          								match (List.hd (op_mons)).second_type with
-          									| None -> 
-          										weakness (valOf((List.hd op_mons).first_type)) (valOf(h.first_type)) 
-          									| Some y -> 
-          										weakness y (valOf(h.first_type)) +. 
-          										  weakness (valOf((List.hd op_mons).first_type)) (valOf(h.first_type)) in 
-          						   if (use_potion h && (x >= 2.0)) || (!turns_out > 10) then
-          								let s = switch_for_advantage gr c in
-													  turns_out := 0; 
-          								  SwitchSteammon(s.species)								
-          							 else 	
-            							 (let s = power_attack gr h c in
-													   turns_out := !turns_out + 1;
-            							   UseAttack(s)))))
-					         | _ -> failwith "hello")
-				| _ -> failwith "nope"
+  			  let (op_mons, _) = op_team in
+  			  (match mons with
+  					| h::_ ->
+  						(let fainted = List.filter (fun x -> x.curr_hp = 0) mons in
+  						if (List.length fainted > 2 && (m > 0) ) then 
+								UseItem(Revive, (List.hd(fainted)).species)
+							else	
+    						(if (use_potion h) && (!potion) && (l > 0) then
+    							(potion := false;
+									turns_out := !turns_out + 1;
+    							UseItem(MaxPotion, h.species))
+    						 else
+    							 (* if we are weak and there is another better choice*)
+    							 (let x = 
+    								match (List.hd (op_mons)).second_type with
+    									| None -> 
+    										weakness (valOf((List.hd op_mons).first_type)) (valOf(h.first_type)) 
+    									| Some y -> 
+    										weakness y (valOf(h.first_type)) +. 
+    										  weakness (valOf((List.hd op_mons).first_type)) (valOf(h.first_type)) in 
+    						   if (use_potion h && (x >= 2.0)) || (!turns_out > 10) then
+    								let s = switch_for_advantage gr c in
+										  turns_out := 0; 
+    								  SwitchSteammon(s.species)								
+    							 else 	
+      							 (let s = power_attack gr h c in
+										   turns_out := !turns_out + 1;
+      							   UseAttack(s)))))
+				 | _ -> failwith "hello")
+		 | _ -> failwith "nope"
 
 let () = run_bot handle_request
