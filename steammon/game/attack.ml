@@ -95,7 +95,7 @@ let normal_attack (at : steammon) (a : attack ref) (df: steammon) : float =
 	in
 	let st_mult = find_atk_mult !a df in
 	let happens = Random.int 100 in
-	let acc' = (float_of_int !a.accuracy)*.(mod_constant_acc !a.mods.accuracy_mod) in
+	let acc' = (float_of_int !a.accuracy)*.(mod_constant_acc at.mods.accuracy_mod) in
 	if happens < (int_of_float acc') then
 		(*(a := State.change_pp_by (!a) (-1);*)
 	  (pow*.attackersattack*.crit_effect*.stab_bonus*.st_mult)/.opponentsdef
