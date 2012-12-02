@@ -2,6 +2,7 @@ open Definitions
 open Util
 open Constants
 open Netgraphics
+open State
 
 type team = {
 	id: color;
@@ -148,7 +149,6 @@ let rec update_team cmd (old : team) (old2 : team ref) : team =
 								else if !third_atk then 3 else if !fourth_atk then 4
 								else failwith "not supposed to happen YO"
 							);
-						print_endline ("The attack " ^ !atk.name ^ " has " ^ (string_of_int !atk.pp_remaining) ^ " PP left");
 						let dfdr = List.hd (!old2.steammons) in
 						let dmg = int_of_float (Attack.final_attack atk battlemon_ref dfdr) in
 						Attack.apply_effect atk dfdr;
@@ -185,10 +185,12 @@ let handle_step g ra ba : game_output =
 				(float_of_int !p.speed)*.(mod_constant_spd !p.mods.speed_mod)
 		in
 		if modified_speed (!r_old) < modified_speed (!b_old) then
-			(b_old := update_team ba !b_old r_old;
+			(Netgraphics.add_update(SetFirstAttacker Blue);
+			b_old := update_team ba !b_old r_old;
 			r_old := update_team ra !r_old b_old;)
 		else
-			(r_old := update_team ra !r_old b_old;
+			(Netgraphics.add_update(SetFirstAttacker Red);
+			r_old := update_team ra !r_old b_old;
     	b_old := update_team ba !b_old r_old;)
 	in
 	let x  = deref_list (!r_old.steammons) and y = deref_list (!b_old.steammons) in 
@@ -196,10 +198,14 @@ let handle_step g ra ba : game_output =
 	let b_data = (y, deref_list !b_old.items) in
 	let set_comms (red : team) (blue : team) : (command option) * (command option) =
 		incr(pick_num);
-		if (!pick_num / 2) mod 2 = 1 && List.length blue.steammons < cNUM_PICKS then
-			(None, Some(Request(PickRequest(Blue, (r_data,b_data), !atks, !pool))))
-		else if (!pick_num / 2) mod 2 = 0 && List.length red.steammons < cNUM_PICKS then
-			 (Some(Request(PickRequest(Red, (r_data,b_data), !atks, !pool))), None)
+		let (f,s) = match !first_color with
+			| Red -> (red, blue)
+			| Blue -> (blue, red)
+		in
+		if (!pick_num / 2) mod 2 = 1 && List.length f.steammons < cNUM_PICKS then
+			(None, Some(Request(PickRequest(f.id, (r_data,b_data), !atks, !pool))))
+		else if (!pick_num / 2) mod 2 = 0 && List.length s.steammons < cNUM_PICKS then
+			 (Some(Request(PickRequest(s.id, (r_data,b_data), !atks, !pool))), None)
 		else if red.items = [] && blue.items = [] then
 			(Some(Request(PickInventoryRequest(r_data,b_data))), Some(Request(PickInventoryRequest(r_data,b_data))))
 		else if !red_to_start && !blue_to_start then
@@ -289,5 +295,5 @@ let init_game () =
 	let red = ref {id = Red; steammons = []; items = initItems} in
 	let blue = ref {id = Blue; steammons = []; items = initItems} in
 	Netgraphics.send_update InitGraphics;
-	Netgraphics.add_update (SetFirstAttacker c);
+	(*Netgraphics.add_update (SetFirstAttacker c);*)
 	((red,blue), c, alist, slist)

@@ -1,6 +1,7 @@
 open Definitions
 open Util
 open Constants
+open State
 
 (**
 This is the module that handles when a pokemon is attacked by a certain type of attack. 
